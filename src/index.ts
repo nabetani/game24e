@@ -18,12 +18,14 @@ window.addEventListener('resize', () => {
 })
 
 new OrbitControls(camera, renderer.domElement)
+const tloader = new THREE.TextureLoader()
+const wallT = tloader.load("./assets/wall0.webp")
+wallT.colorSpace = THREE.SRGBColorSpace;const geometry = new THREE.BoxGeometry()
+const materialM = new THREE.MeshBasicMaterial({map:wallT})
+const materialN = new THREE.MeshNormalMaterial({ wireframe: false })
 
 for( let i=0 ; i<1024 ; ++i ){
-  const geometry = new THREE.BoxGeometry()
-  const material = new THREE.MeshNormalMaterial({ wireframe: false })
-
-  const cube = new THREE.Mesh(geometry, material)
+  const cube = new THREE.Mesh(geometry, i%3==0 ? materialM : materialN)
   cube.applyMatrix4( (new THREE.Matrix4()).multiplyScalar(0.3) );
   const x = ( (i & 31) - 15 );
   const z = ( (i >>5) - 15 );
