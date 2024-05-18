@@ -20,7 +20,8 @@ window.addEventListener('resize', () => {
 new OrbitControls(camera, renderer.domElement)
 const tloader = new THREE.TextureLoader()
 const wallT = tloader.load("./assets/wall0.webp")
-wallT.colorSpace = THREE.SRGBColorSpace;const geometry = new THREE.BoxGeometry()
+wallT.colorSpace = THREE.SRGBColorSpace;
+const geometry = new THREE.BoxGeometry()
 const materialM = new THREE.MeshBasicMaterial({map:wallT})
 const materialN = new THREE.MeshNormalMaterial({ wireframe: false })
 
@@ -29,8 +30,8 @@ for( let i=0 ; i<1024 ; ++i ){
   cube.applyMatrix4( (new THREE.Matrix4()).multiplyScalar(0.3) );
   const x = ( (i & 31) - 15 );
   const z = ( (i >>5) - 15 );
-  cube.translateX(x*0.35);
-  cube.translateZ(z*0.35);
+  cube.translateX((x + (0<=x ? 1 : 0))*0.35);
+  cube.translateZ((z + (0<=z ? 1 : 0))*0.35);
   scene.add(cube)
 }
 
