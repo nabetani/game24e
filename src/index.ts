@@ -49,13 +49,15 @@ class Main {
     };
   }
   initMap() {
-    const wallT = this.tloader.load("./assets/wall0.webp")
-    wallT.colorSpace = THREE.SRGBColorSpace;
     const N = 4;
     const floorY = -2
     {
-      const geometry = new THREE.PlaneGeometry(10, 10)
-      const material = new THREE.MeshBasicMaterial({ map: wallT })
+      const tx = this.tloader.load("./assets/wall0.webp")
+      tx.colorSpace = THREE.SRGBColorSpace;
+      tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
+      tx.repeat.set(20, 20);
+      const geometry = new THREE.PlaneGeometry(100, 100)
+      const material = new THREE.MeshBasicMaterial({ map: tx })
       const floor = new THREE.Mesh(geometry, material)
       floor.translateY(floorY)
       floor.translateZ(-6)
@@ -63,6 +65,8 @@ class Main {
       this.scene.add(floor)
     }
     {
+      const wallT = this.tloader.load("./assets/wall0.webp")
+      wallT.colorSpace = THREE.SRGBColorSpace;
       const geometry = new THREE.BoxGeometry()
       const material = new THREE.MeshBasicMaterial({ map: wallT })
       for (let i = 0; i < N; ++i) {
@@ -71,7 +75,7 @@ class Main {
         const x = i - (N - 1) / 2
         const z = -6
         cube.translateX(x)
-        cube.translateY(floorY + 0.5)
+        cube.translateY(floorY + 1)
         cube.translateZ(z)
         this.scene.add(cube)
       }
