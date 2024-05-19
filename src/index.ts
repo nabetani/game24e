@@ -8,7 +8,7 @@ class Main {
   tloader = new THREE.TextureLoader()
 
   constructor() {
-    this.camera.position.z = 1.5
+    this.camera.position.z = 0
     this.renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(this.renderer.domElement)
     window.addEventListener('resize', () => {
@@ -16,7 +16,7 @@ class Main {
       this.camera.updateProjectionMatrix()
       this.renderer.setSize(window.innerWidth, window.innerHeight)
     });
-    this.setInputEvents();
+    // this.setInputEvents();
     this.initMap();
   }
 
@@ -51,18 +51,30 @@ class Main {
   initMap() {
     const wallT = this.tloader.load("./assets/wall0.webp")
     wallT.colorSpace = THREE.SRGBColorSpace;
-    const geometry = new THREE.BoxGeometry()
-    const materialM = new THREE.MeshBasicMaterial({ map: wallT })
-    const materialN = new THREE.MeshNormalMaterial({ wireframe: false })
-
-    for (let i = 0; i < 1024; ++i) {
-      const cube = new THREE.Mesh(geometry, i % 3 == 0 ? materialM : materialN)
-      cube.applyMatrix4((new THREE.Matrix4()).multiplyScalar(0.3));
-      const x = ((i & 31) - 15);
-      const z = ((i >> 5) - 15);
-      cube.translateX((x + (0 <= x ? 1 : 0)) * 0.35);
-      cube.translateZ((z + (0 <= z ? 1 : 0)) * 0.35);
-      this.scene.add(cube)
+    const N = 4;
+    const floorY = -2
+    {
+      const geometry = new THREE.PlaneGeometry(10, 10)
+      const material = new THREE.MeshBasicMaterial({ map: wallT })
+      const floor = new THREE.Mesh(geometry, material)
+      floor.translateY(floorY)
+      floor.translateZ(-6)
+      floor.rotateX(-Math.PI / 2)
+      this.scene.add(floor)
+    }
+    {
+      const geometry = new THREE.BoxGeometry()
+      const material = new THREE.MeshBasicMaterial({ map: wallT })
+      for (let i = 0; i < N; ++i) {
+        const cube = new THREE.Mesh(geometry, material)
+        cube.applyMatrix4((new THREE.Matrix4()).multiplyScalar(0.9));
+        const x = i - (N - 1) / 2
+        const z = -6
+        cube.translateX(x)
+        cube.translateY(floorY + 0.5)
+        cube.translateZ(z)
+        this.scene.add(cube)
+      }
     }
   }
   animate() {
