@@ -83,17 +83,26 @@ class Main {
     const material = new THREE.MeshStandardMaterial({ map: wallT })
     const geometry = new THREE.BoxGeometry()
     const size = this.world.size
+    const th = 0.1
+    const txyz = (p: THREE.Mesh, x: number, y: number, z: number, ax: 0 | 1 | 2) => {
+      const scale = new THREE.Vector3(ax == 0 ? th : 1, ax == 1 ? th : 1, ax == 2 ? th : 1)
+      p.applyMatrix4((new THREE.Matrix4()).scale(scale))
+      p.translateX(x)
+      p.translateY(y)
+      p.translateZ(z)
+    }
     for (const x of range(0, size.x)) {
       for (const y of range(0, size.y)) {
         for (const z of range(0, size.z)) {
           const wall = this.world.at({ x: x, y: y, z: z })
-          if (wall === 0) { continue }
-          const cube = new THREE.Mesh(geometry, material)
-          cube.applyMatrix4((new THREE.Matrix4()).multiplyScalar(0.9));
-          cube.translateX(x)
-          cube.translateY(y)
-          cube.translateZ(z)
-          this.scene.add(cube)
+          for (const ax of [0, 1, 2]) {
+            const d = (a: number) => (a == ax ? -0.5 : 0)
+            if ((wall & (1 << ax)) != 0) {
+              const p = new THREE.Mesh(geometry, material)
+              txyz(p, x + d(0), y + d(1), z + d(2), ax as (0 | 1 | 2))
+              this.scene.add(p)
+            }
+          }
         }
       }
     }
