@@ -27,7 +27,7 @@ class Main {
   }
   constructor() {
     this.adaptToWindowSize()
-    this.world = new World();
+    this.world = new World(1);
     document.body.appendChild(this.renderer.domElement)
     document.body.appendChild(this.stats.dom);
     window.addEventListener('resize', () => {
@@ -131,7 +131,7 @@ class Main {
     for (const x of range(0, size.x)) {
       for (const y of range(0, size.y)) {
         for (const z of range(0, size.z)) {
-          const wall = this.world.at({ x: x, y: y, z: z })
+          const wall = this.world.cellAt({ x: x, y: y, z: z })
           for (const ax of [0, 1, 2]) {
             const d = (a: number) => (a == ax ? -0.5 : 0)
             if ((wall & (1 << ax)) != 0) {
