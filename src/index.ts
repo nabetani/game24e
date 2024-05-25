@@ -1,6 +1,5 @@
 // copy from https://sbcode.net/threejs/renderer/
 import * as THREE from 'three'
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import Stats from 'three/addons/libs/stats.module.js'
 import { World } from './world'
 import { range } from './calc'
@@ -15,8 +14,19 @@ class Main {
   stats = new Stats();
   world: World
   queue: [number, DoSomething][] = []
+  touchStart: { x: number, y: number } | null = null
+  touchMove: { x: number, y: number } | null = null
+  flickTh = 40
+  adaptToWindowSize() {
+    const w = window.innerWidth
+    const h = window.innerHeight
+    this.camera.aspect = w / h
+    this.camera.updateProjectionMatrix()
+    this.renderer.setSize(w, h)
+    this.flickTh = w / 7
+  }
   constructor() {
-    this.renderer.setSize(window.innerWidth, window.innerHeight)
+    this.adaptToWindowSize()
     this.world = new World();
     document.body.appendChild(this.renderer.domElement)
     document.body.appendChild(this.stats.dom);
@@ -28,8 +38,6 @@ class Main {
     this.setInputEvents();
     this.initLight();
     this.initMap();
-    const oc = new OrbitControls(this.camera, document.body)
-    console.log({ oc: oc })
 
   }
   initLight() {
@@ -37,9 +45,8 @@ class Main {
   }
 
   setInputEvents() {
-    const canvas = this.renderer.domElement;
-    const p = canvas.parentElement;
-    const actFrameCount = 32
+    const p = window;
+    const actFrameCount = 16
     const move = () => {
       const camera = this.camera
       const dir0 = camera.getWorldDirection(new THREE.Vector3());
@@ -55,28 +62,58 @@ class Main {
       const camera = this.camera
       this.queue.push([actFrameCount, () => this.camera.rotateX(Math.PI / 2 / actFrameCount * x)])
     };
-    if (p) {
-      p.addEventListener("keydown", (event) => {
-        if (event.code == "ArrowRight") {
-          turnY(-1);
-          event.preventDefault();
-        } else if (event.code === "ArrowLeft") {
-          turnY(1);
-          event.preventDefault();
-        } else if (event.code === "ArrowUp") {
-          turnZ(1);
-          event.preventDefault();
-        } else if (event.code === "ArrowDown") {
-          turnZ(-1);
-          event.preventDefault();
-        } else if (event.code === "Space") {
-          move();
-          event.preventDefault();
-        } else {
-          console.log({ name: "keydown", event: event })
+    p.addEventListener('touchstart', (e) => {
+      this.touchStart = { x: e.touches[0].pageX, y: e.touches[0].pageY };
+      this.touchMove = null
+    })
+    p.addEventListener('touchmove', (e) => {
+      this.touchMove = { x: e.changedTouches[0].pageX, y: e.changedTouches[0].pageY };
+    })
+    p.addEventListener('touchend', (e) => {
+      if (this.touchStart == null) { return }
+      if (this.touchMove == null) {
+        move()
+      } else {
+        const dx = this.touchMove.x - this.touchStart.x
+        const dy = this.touchMove.y - this.touchStart.y
+        const dist = Math.sqrt(dx ** 2 + dy ** 2)
+        console.log({
+          dist: dist, dx: dy, dy: dy,
+          move: this.touchMove,
+          st: this.touchStart
+        })
+        const dir = Math.floor(Math.atan2(dy, dx) * 2 / Math.PI + 4.5) % 4
+        switch (dir) {
+          case 0: turnY(1); break
+          case 1: turnZ(1); break
+          case 2: turnY(-1); break
+          case 3: turnZ(-1); break
         }
-      })
-    };
+      }
+      e.preventDefault();
+      this.touchStart = null
+    })
+
+    p.addEventListener("keydown", (event) => {
+      if (event.code == "ArrowRight") {
+        turnY(-1);
+        event.preventDefault();
+      } else if (event.code === "ArrowLeft") {
+        turnY(1);
+        event.preventDefault();
+      } else if (event.code === "ArrowUp") {
+        turnZ(1);
+        event.preventDefault();
+      } else if (event.code === "ArrowDown") {
+        turnZ(-1);
+        event.preventDefault();
+      } else if (event.code === "Space") {
+        move();
+        event.preventDefault();
+      } else {
+        console.log({ name: "keydown", event: event })
+      }
+    })
   }
   initMap() {
     const wallT = this.tloader.load("./assets/wall0.webp")

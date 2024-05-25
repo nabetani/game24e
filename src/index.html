@@ -10,29 +10,27 @@
     html,
     body {
       height: 100%;
-      margin: 0;
       background-color: black;
-      border: none;
     }
 
-    #game-app {
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    * {
+      overflow: hidden;
       border: none;
+      margin: 0;
+      padding: 0;
     }
 
-    #game-app>canvas {
+    canvas {
       max-width: 100%;
       max-height: 100%;
-      border: none;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
   </style>
 </head>
 
 <body>
-  <canvas class="stage"></canvas>
 </body>
 
 </html>
