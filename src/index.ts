@@ -117,10 +117,17 @@ class Main {
   }
   initMap() {
     const wallT = this.tloader.load("./assets/wall0.webp")
-    const material = new THREE.MeshStandardMaterial({ map: wallT })
+    const materials = [
+      new THREE.MeshLambertMaterial({ map: wallT }),
+      new THREE.MeshLambertMaterial({ map: wallT, color: 0xffff00 }),
+      new THREE.MeshLambertMaterial({ map: wallT, color: 0xffff }),
+      new THREE.MeshLambertMaterial({ map: wallT, color: 0xff00ff }),
+      new THREE.MeshLambertMaterial({ map: wallT, color: 0xff0000 }),
+      new THREE.MeshLambertMaterial({ map: wallT, color: 0xff00 }),
+    ]
     const geometry = new THREE.BoxGeometry()
     const size = this.world.size
-    const th = 0.1
+    const th = 0.2
     const txyz = (p: THREE.Mesh, x: number, y: number, z: number, ax: 0 | 1 | 2) => {
       const scale = new THREE.Vector3(ax == 0 ? th : 1, ax == 1 ? th : 1, ax == 2 ? th : 1)
       p.applyMatrix4((new THREE.Matrix4()).scale(scale))
@@ -135,7 +142,7 @@ class Main {
           for (const ax of [0, 1, 2]) {
             const d = (a: number) => (a == ax ? -0.5 : 0)
             if ((wall & (1 << ax)) != 0) {
-              const p = new THREE.Mesh(geometry, material)
+              const p = new THREE.Mesh(geometry, materials)
               txyz(p, x + d(0), y + d(1), z + d(2), ax as (0 | 1 | 2))
               this.scene.add(p)
             }
