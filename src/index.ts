@@ -1,8 +1,9 @@
 // copy from https://sbcode.net/threejs/renderer/
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import { ShadowMesh } from 'three/addons/objects/ShadowMesh.js';
 import Stats from 'three/addons/libs/stats.module.js'
+import { World } from './world'
+import { range } from './calc'
 
 type DoSomething = { (): void };
 
@@ -12,9 +13,11 @@ class Main {
   renderer = new THREE.WebGLRenderer({ antialias: true })
   tloader = new THREE.TextureLoader()
   stats = new Stats();
+  world: World
   queue: [number, DoSomething][] = []
   constructor() {
     this.renderer.setSize(window.innerWidth, window.innerHeight)
+    this.world = new World();
     document.body.appendChild(this.renderer.domElement)
     document.body.appendChild(this.stats.dom);
     window.addEventListener('resize', () => {
@@ -31,9 +34,7 @@ class Main {
   }
   initLight() {
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.9))
-    // this.scene.add(new THREE.CameraHelper(this.light.shadow.camera));
   }
-
 
   setInputEvents() {
     const canvas = this.renderer.domElement;
@@ -78,26 +79,22 @@ class Main {
     };
   }
   initMap() {
-    {
-      const c = 5
-      const W = c * 2 + 1;
-      const N = W * W * W;
-      const wallT = this.tloader.load("./assets/wall0.webp")
-      // wallT.colorSpace = THREE.SRGBColorSpace;
-      const material = new THREE.MeshStandardMaterial({ map: wallT })
-      const geometry = new THREE.BoxGeometry()
-      for (let i = 0; i < N; ++i) {
-        if (i % 7 != 3) { continue }
-        const cube = new THREE.Mesh(geometry, material)
-        cube.applyMatrix4((new THREE.Matrix4()).multiplyScalar(0.9));
-        const ix = i % W
-        const ii = (i - ix) / W
-        const iy = ii % W
-        const iz = (ii - iy) / W % W
-        cube.translateX(ix - c)
-        cube.translateY(iy - c)
-        cube.translateZ(iz - c)
-        this.scene.add(cube)
+    const wallT = this.tloader.load("./assets/wall0.webp")
+    const material = new THREE.MeshStandardMaterial({ map: wallT })
+    const geometry = new THREE.BoxGeometry()
+    const size = this.world.size
+    for (const x of range(0, size.x)) {
+      for (const y of range(0, size.y)) {
+        for (const z of range(0, size.z)) {
+          const wall = this.world.at({ x: x, y: y, z: z })
+          if (wall === 0) { continue }
+          const cube = new THREE.Mesh(geometry, material)
+          cube.applyMatrix4((new THREE.Matrix4()).multiplyScalar(0.9));
+          cube.translateX(x)
+          cube.translateY(y)
+          cube.translateZ(z)
+          this.scene.add(cube)
+        }
       }
     }
   }
