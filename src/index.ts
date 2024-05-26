@@ -8,7 +8,7 @@ type DoSomething = { (): void };
 
 class Main {
   scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+  camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 1000)
   renderer = new THREE.WebGLRenderer({ antialias: true })
   tloader = new THREE.TextureLoader()
   stats = new Stats();
@@ -41,7 +41,18 @@ class Main {
 
   }
   initLight() {
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.9))
+    this.scene.add(new THREE.AmbientLight(0x88ffff, 0.9))
+    // let cix = 0
+    // const cols = [0xff, 0xff00, 0xffff, 0xff00ff, 0xffff00, 0xffffff]
+    // for (const d0 of [[1, 0.5, 0.1], [0.1, 1, 0.5], [0.5, 0.1, 1]]) {
+    //   for (const s of [-1, 1]) {
+    //     const d = d0.map((e) => e * s)
+    //     const dl = new THREE.DirectionalLight(cols[cix], 0.5)
+    //     ++cix
+    //     dl.position.set(d[0], d[1], d[2]).normalize();
+    //     this.scene.add(dl)
+    //   }
+    // }
   }
 
   setInputEvents() {
@@ -117,17 +128,27 @@ class Main {
   }
   initMap() {
     const wallT = this.tloader.load("./assets/wall0.webp")
-    const materials = [
+    const m0 = [
       new THREE.MeshLambertMaterial({ map: wallT }),
       new THREE.MeshLambertMaterial({ map: wallT, color: 0xffff00 }),
+    ]
+    const m1 = [
       new THREE.MeshLambertMaterial({ map: wallT, color: 0xffff }),
       new THREE.MeshLambertMaterial({ map: wallT, color: 0xff00ff }),
+    ]
+    const m2 = [
       new THREE.MeshLambertMaterial({ map: wallT, color: 0xff0000 }),
       new THREE.MeshLambertMaterial({ map: wallT, color: 0xff00 }),
     ]
+    const s0 = new THREE.MeshLambertMaterial({ color: 0xffaaaa })
+    const s1 = new THREE.MeshLambertMaterial({ color: 0xaaffaa })
+    const s2 = new THREE.MeshLambertMaterial({ color: 0xaaaaff })
+    const ms0 = [s0, s0]
+    const ms1 = [s1, s1]
+    const ms2 = [s2, s2]
     const geometry = new THREE.BoxGeometry()
     const size = this.world.size
-    const th = 0.2
+    const th = 0.05
     const txyz = (p: THREE.Mesh, x: number, y: number, z: number, ax: 0 | 1 | 2) => {
       const scale = new THREE.Vector3(ax == 0 ? th : 1, ax == 1 ? th : 1, ax == 2 ? th : 1)
       p.applyMatrix4((new THREE.Matrix4()).scale(scale))
@@ -142,7 +163,8 @@ class Main {
           for (const ax of [0, 1, 2]) {
             const d = (a: number) => (a == ax ? -0.5 : 0)
             if ((wall & (1 << ax)) != 0) {
-              const p = new THREE.Mesh(geometry, materials)
+              const ma = [...(ax == 0 ? m0 : ms0), ...(ax == 1 ? m1 : ms1), ...(ax == 2 ? m2 : ms2)]
+              const p = new THREE.Mesh(geometry, ma)
               txyz(p, x + d(0), y + d(1), z + d(2), ax as (0 | 1 | 2))
               this.scene.add(p)
             }
