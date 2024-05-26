@@ -41,12 +41,21 @@ const build = (seed: number): { walls: wall[], ws: xyz } => {
             0 <= p.y && p.y + 1 < ws.y &&
             0 <= p.z && p.z + 1 < ws.z)
     }
-    for (const i of range(0, 100)) {
+    for (const i of range(0, 6)) {
         let dir = i % 6
         let pos = { x: 0, y: 0, z: 0 }
         for (const _ of range(0, len)) {
-            const npos = progress(pos, dir)
-            if (!inWorld(npos)) { break }
+            const npos = ((): xyz | null => {
+                for (const _ of range(0, 6)) {
+                    const npos = progress(pos, dir)
+                    if (inWorld(npos)) { return npos }
+                    dir = rng.i(6)
+                }
+                return null
+            })()
+            if (npos == null) {
+                break
+            }
             const dp = dirToXyz(dir)
             if (dp.x < 0) {
                 walls[posToIx(pos, ws)!] &= ~wallX
