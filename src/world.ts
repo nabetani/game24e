@@ -21,7 +21,7 @@ const posToIx = (pos: xyz, s: xyz): number | null => {
 }
 const dirToXyz = (d: number): xyz => {
     return {
-        x: [1, -1, 0, 0, 0][d],
+        x: [1, -1, 0, 0, 0, 0][d],
         y: [0, 0, 1, -1, 0, 0][d],
         z: [0, 0, 0, 0, 1, -1][d],
     }
@@ -113,6 +113,7 @@ export class World {
         ][this.iTop >> 1]
         const e = (d < 0) == ((this.iTop & 1) == 0)
         this.iFore = t[(t.indexOf(this.iFore) + (e ? 1 : 3)) % 4]
+        // console.log(JSON.stringify({ d: d, f: this.iFore, t: this.iTop }))
     }
     // up/down
     turnZ(d: number) {

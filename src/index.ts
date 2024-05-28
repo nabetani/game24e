@@ -78,16 +78,19 @@ class Main {
     this.camera.lookAt(xyzToVec3(cp.fore).multiplyScalar(1e10))
   }
   walk(proc: () => void) {
-    const cp0 = this.world.camPose
+    const cp0 = structuredClone(this.world.camPose)
     proc()
-    const cp1 = this.world.camPose
-    const n = 100
-    for (const i of range(0, n)) {
+    const cp1 = structuredClone(this.world.camPose)
+    const n = 10
+    for (const i of range(0, n + 1)) {
       const r = i / n
       this.queue.push([1, () => {
-        this.camera.position.copy(C.interVecL(cp0.pos, cp1.pos, r))
+        const pos = C.interVecL(cp0.pos, cp1.pos, r)
+        console.log(JSON.stringify({ r: r, pos: pos, cp: [cp0.pos, cp1.pos] }))
+        this.camera.position.set(pos.x, pos.y, pos.z)
         this.camera.up = C.interVec(cp0.top, cp1.top, r)
         this.camera.lookAt(C.interVec(cp0.fore, cp1.fore, r).multiplyScalar(1e10))
+        this.camera.updateMatrix()
       }])
     }
   }
@@ -207,15 +210,7 @@ class Main {
     this.stats.begin();
     if (0 < this.queue.length) {
       this.queue[0][1]();
-      const eu = this.camera.rotation
-      const a = (r: number): number => {
-        return Math.round(((r + Math.PI * 0) * 180 / Math.PI) % 360)
-      }
-      console.log("eu:" + JSON.stringify({ x: a(eu.x), y: a(eu.y), z: a(eu.z) }))
-      const q = new THREE.Quaternion().setFromEuler(eu)
-      q.setFromAxisAngle
-      console.log("q:" + JSON.stringify(q.toArray().map(e => Math.round(e * 100))))
-      console.log(`wdir:${this.camera.getWorldDirection(new THREE.Vector3).toArray().map(e => Math.round(e * 100))}`)
+      console.log(JSON.stringify({ campos: this.camera.position }))
       if (0 === --this.queue[0][0]) {
         this.queue.shift();
       }
