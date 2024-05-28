@@ -7,6 +7,11 @@ export const wallX: wall = 1
 export const wallY: wall = 2
 export const wallZ: wall = 4
 export type xyz = { x: number, y: number, z: number }
+export type CamPoseType = {
+    readonly pos: xyz,
+    readonly fore: xyz,
+    readonly top: xyz
+}
 
 const posToIx = (pos: xyz, s: xyz): number | null => {
     if (pos.x < 0 && s.x <= pos.x) { return null }
@@ -20,6 +25,9 @@ const dirToXyz = (d: number): xyz => {
         y: [0, 0, 1, -1, 0, 0][d],
         z: [0, 0, 0, 0, 1, -1][d],
     }
+}
+const invDir = (d: number): number => {
+    return d ^ 1;
 }
 const progress = (p: xyz, d: number): xyz => {
     const dp = dirToXyz(d)
@@ -83,6 +91,40 @@ const build = (seed: number): { walls: wall[], ws: xyz } => {
 export class World {
     walls: wall[]
     worldSize: xyz
+    pos: xyz = { x: 0, y: 0, z: 0 }
+    iFore: number = 0
+    iTop: number = 2
+    get fore(): xyz {
+        return dirToXyz(this.iFore)
+    }
+    get top(): xyz {
+        return dirToXyz(this.iTop)
+    }
+    get camPose(): CamPoseType {
+        return { pos: this.pos, fore: this.fore, top: this.top }
+    }
+
+    turnY(d: number) {
+        console.log(JSON.stringify({ d: d, f: this.iFore, t: this.iTop }))
+        const t = [
+            [2, 5, 3, 4],
+            [0, 4, 1, 5],
+            [0, 3, 1, 2],
+        ][this.iTop >> 1]
+        const e = (d < 0) == ((this.iTop & 1) == 0)
+        this.iFore = t[(t.indexOf(this.iFore) + (e ? 1 : 3)) % 4]
+    }
+    // up/down
+    turnZ(d: number) {
+        [this.iFore, this.iTop] =
+            (d < 0) ? [invDir(this.iTop), this.iFore] : [this.iTop, invDir(this.iFore)]
+    }
+    move() {
+        const d = dirToXyz(this.iFore)
+        this.pos.x += d.x
+        this.pos.y += d.y
+        this.pos.z += d.z
+    }
     constructor(seed: number) {
         const { walls, ws } = build(seed)
         this.walls = walls

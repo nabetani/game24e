@@ -2,9 +2,15 @@
 import * as THREE from 'three'
 import Stats from 'three/addons/libs/stats.module.js'
 import { World } from './world'
+import *  as W from './world'
+import *  as C from './calc'
 import { range } from './calc'
 
 type DoSomething = { (): void };
+
+const xyzToVec3 = (i: W.xyz): THREE.Vector3 => {
+  return new THREE.Vector3(i.x, i.y, i.z)
+}
 
 class Main {
   scene = new THREE.Scene();
@@ -35,9 +41,16 @@ class Main {
       this.camera.updateProjectionMatrix()
       this.renderer.setSize(window.innerWidth, window.innerHeight)
     });
+    this.setCamPose(this.camPose)
     this.setInputEvents();
     this.initLight();
     this.initMap();
+
+    const q = new THREE.Quaternion(1, 0, 0, 0)
+    const eu = new THREE.Euler().setFromQuaternion(q)
+    console.log(`eu:${eu}`)
+    this.camera.setRotationFromEuler(eu)
+    console.log(`wdir:${this.camera.getWorldDirection(new THREE.Vector3).toArray()}`)
 
   }
   initLight() {
@@ -54,24 +67,41 @@ class Main {
     //   }
     // }
   }
-
+  camPose: W.CamPoseType = {
+    pos: new THREE.Vector3(0, 1, 1),
+    fore: new THREE.Vector3(0, 0, 1),
+    top: new THREE.Vector3(0, 1, 0),
+  }
+  setCamPose(cp: W.CamPoseType) {
+    this.camera.position.set(cp.pos.x, cp.pos.y, cp.pos.z)
+    this.camera.up = xyzToVec3(cp.top)
+    this.camera.lookAt(xyzToVec3(cp.fore).multiplyScalar(1e10))
+  }
+  walk(proc: () => void) {
+    const cp0 = this.world.camPose
+    proc()
+    const cp1 = this.world.camPose
+    const n = 100
+    for (const i of range(0, n)) {
+      const r = i / n
+      this.queue.push([1, () => {
+        this.camera.position.copy(C.interVecL(cp0.pos, cp1.pos, r))
+        this.camera.up = C.interVec(cp0.top, cp1.top, r)
+        this.camera.lookAt(C.interVec(cp0.fore, cp1.fore, r).multiplyScalar(1e10))
+      }])
+    }
+  }
   setInputEvents() {
     const p = window;
-    const actFrameCount = 16
+    const actFrameCount = 4
     const move = () => {
-      const camera = this.camera
-      const dir0 = camera.getWorldDirection(new THREE.Vector3());
-      const dir = dir0.clone().setLength(1)
-      console.log({ dir0: dir0, dir: dir0 })
-      this.queue.push([actFrameCount, () => camera.position.add(dir.clone().multiplyScalar(1 / actFrameCount))])
+      this.walk(() => this.world.move())
     };
     const turnY = (x: number) => {
-      const camera = this.camera
-      this.queue.push([actFrameCount, () => this.camera.rotateY(Math.PI / 2 / actFrameCount * x)])
+      this.walk(() => this.world.turnY(x))
     };
     const turnZ = (x: number) => {
-      const camera = this.camera
-      this.queue.push([actFrameCount, () => this.camera.rotateX(Math.PI / 2 / actFrameCount * x)])
+      this.walk(() => this.world.turnZ(x))
     };
     p.addEventListener('touchstart', (e) => {
       this.touchStart = { x: e.touches[0].pageX, y: e.touches[0].pageY };
@@ -177,6 +207,15 @@ class Main {
     this.stats.begin();
     if (0 < this.queue.length) {
       this.queue[0][1]();
+      const eu = this.camera.rotation
+      const a = (r: number): number => {
+        return Math.round(((r + Math.PI * 0) * 180 / Math.PI) % 360)
+      }
+      console.log("eu:" + JSON.stringify({ x: a(eu.x), y: a(eu.y), z: a(eu.z) }))
+      const q = new THREE.Quaternion().setFromEuler(eu)
+      q.setFromAxisAngle
+      console.log("q:" + JSON.stringify(q.toArray().map(e => Math.round(e * 100))))
+      console.log(`wdir:${this.camera.getWorldDirection(new THREE.Vector3).toArray().map(e => Math.round(e * 100))}`)
       if (0 === --this.queue[0][0]) {
         this.queue.shift();
       }
