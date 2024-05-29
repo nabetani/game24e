@@ -19,6 +19,14 @@ const posToIx = (pos: xyz, s: xyz): number | null => {
     if (pos.z < 0 && s.z <= pos.z) { return null }
     return pos.x + s.x * (pos.y + s.y * pos.z)
 }
+
+const addXyz = (a: xyz, b: xyz): xyz => {
+    return {
+        x: a.x + b.x,
+        y: a.y + b.y,
+        z: a.z + b.z,
+    }
+}
 const dirToXyz = (d: number): xyz => {
     return {
         x: [1, -1, 0, 0, 0, 0][d],
@@ -104,7 +112,7 @@ export class World {
         return { pos: this.pos, fore: this.fore, top: this.top }
     }
 
-    turnY(d: number) {
+    turnY(d: number): boolean {
         // console.log(JSON.stringify({ d: d, f: this.iFore, t: this.iTop }))
         const t = [
             [2, 5, 3, 4],
@@ -114,17 +122,27 @@ export class World {
         const e = (d < 0) == ((this.iTop & 1) == 0)
         this.iFore = t[(t.indexOf(this.iFore) + (e ? 1 : 3)) % 4]
         // console.log(JSON.stringify({ d: d, f: this.iFore, t: this.iTop }))
+        return true
     }
     // up/down
-    turnZ(d: number) {
+    turnZ(d: number): boolean {
         [this.iFore, this.iTop] =
             (d < 0) ? [invDir(this.iTop), this.iFore] : [this.iTop, invDir(this.iFore)]
+        return true
     }
-    move() {
+    move(): boolean {
         const d = dirToXyz(this.iFore)
-        this.pos.x += d.x
-        this.pos.y += d.y
-        this.pos.z += d.z
+        const dest = addXyz(this.pos, d)
+        const w0 = this.cellAt(this.pos)
+        const w1 = this.cellAt(dest)
+        const wallExists = (() => {
+            const w = [w1, w0][this.iFore & 1]
+            const b = 1 << ((this.iFore & 6) / 2)
+            return 0 != (w & b);
+        })()
+        if (wallExists) { return false }
+        this.pos = dest
+        return true
     }
     constructor(seed: number) {
         const { walls, ws } = build(seed)
