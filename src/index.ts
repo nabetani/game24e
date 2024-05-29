@@ -45,7 +45,7 @@ class Main {
     this.setInputEvents();
     this.initLight();
     this.initMap();
-    this.walk(() => { });
+    this.walk(() => false);
   }
   initLight() {
     this.scene.add(new THREE.AmbientLight(0x88ffff, 0.9))
@@ -71,11 +71,10 @@ class Main {
     this.camera.up = xyzToVec3(cp.top)
     this.camera.lookAt(xyzToVec3(cp.fore).multiplyScalar(1e10))
   }
-  walk(proc: () => void) {
+  walk(proc: () => boolean) {
     const cp0 = structuredClone(this.world.camPose)
-    proc()
+    const n = proc() ? 10 : 1
     const cp1 = structuredClone(this.world.camPose)
-    const n = 10
     for (const i of range(0, n + 1)) {
       const r = i / n
       this.queue.push([1, () => {
