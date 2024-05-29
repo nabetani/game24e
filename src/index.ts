@@ -74,12 +74,18 @@ class Main {
     this.camera.lookAt(xyzToVec3(cp.fore).multiplyScalar(1e10))
   }
   walk(proc: () => boolean) {
+    if (1 < this.queue.length) {
+      return
+    }
     const cp0 = structuredClone(this.world.camPose)
     const animate = proc()
     const cp1 = structuredClone(this.world.camPose)
-    const now = this.clock.getElapsedTime()
+    let now: null | number = null
     const t = animate ? 0.3 : 1 / 1000
     this.queue.push(() => {
+      if (now == null) {
+        now = this.clock.getElapsedTime()
+      }
       const r0 = Math.min(1, (this.clock.getElapsedTime() - now) / t)
       const r = 1 - (1 - r0) ** 2
       const pos = C.interVecL(cp0.pos, cp1.pos, r)
