@@ -45,13 +45,7 @@ class Main {
     this.setInputEvents();
     this.initLight();
     this.initMap();
-
-    const q = new THREE.Quaternion(1, 0, 0, 0)
-    const eu = new THREE.Euler().setFromQuaternion(q)
-    console.log(`eu:${eu}`)
-    this.camera.setRotationFromEuler(eu)
-    console.log(`wdir:${this.camera.getWorldDirection(new THREE.Vector3).toArray()}`)
-
+    this.walk(() => { });
   }
   initLight() {
     this.scene.add(new THREE.AmbientLight(0x88ffff, 0.9))
@@ -86,7 +80,7 @@ class Main {
       const r = i / n
       this.queue.push([1, () => {
         const pos = C.interVecL(cp0.pos, cp1.pos, r)
-        console.log(JSON.stringify({ r: r, pos: pos, cp: [cp0.pos, cp1.pos] }))
+        // console.log(JSON.stringify({ r: r, pos: pos, cp: [cp0.pos, cp1.pos] }))
         this.camera.position.set(pos.x, pos.y, pos.z)
         this.camera.up = C.interVec(cp0.top, cp1.top, r)
         this.camera.lookAt(C.interVec(cp0.fore, cp1.fore, r).multiplyScalar(1e10))
@@ -210,7 +204,7 @@ class Main {
     this.stats.begin();
     if (0 < this.queue.length) {
       this.queue[0][1]();
-      console.log(JSON.stringify({ campos: this.camera.position }))
+      // console.log(JSON.stringify({ campos: this.camera.position }))
       if (0 === --this.queue[0][0]) {
         this.queue.shift();
       }

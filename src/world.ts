@@ -105,7 +105,7 @@ export class World {
     }
 
     turnY(d: number) {
-        console.log(JSON.stringify({ d: d, f: this.iFore, t: this.iTop }))
+        // console.log(JSON.stringify({ d: d, f: this.iFore, t: this.iTop }))
         const t = [
             [2, 5, 3, 4],
             [0, 4, 1, 5],
