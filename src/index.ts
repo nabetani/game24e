@@ -6,7 +6,7 @@ import *  as W from './world'
 import *  as C from './calc'
 import { range } from './calc'
 
-type DoSomething = { (): void };
+type DoSomething = { (): boolean };
 
 const xyzToVec3 = (i: W.xyz): THREE.Vector3 => {
   return new THREE.Vector3(i.x, i.y, i.z)
@@ -19,10 +19,11 @@ class Main {
   tloader = new THREE.TextureLoader()
   stats = new Stats();
   world: World
-  queue: [number, DoSomething][] = []
+  queue: DoSomething[] = []
   touchStart: { x: number, y: number } | null = null
   touchMove: { x: number, y: number } | null = null
   flickTh = 40
+  clock = new THREE.Clock(true)
   adaptToWindowSize() {
     const w = window.innerWidth
     const h = window.innerHeight
@@ -45,6 +46,7 @@ class Main {
     this.setInputEvents();
     this.initLight();
     this.initMap();
+    this.clock.start()
     this.walk(() => false);
   }
   initLight() {
@@ -73,19 +75,21 @@ class Main {
   }
   walk(proc: () => boolean) {
     const cp0 = structuredClone(this.world.camPose)
-    const n = proc() ? 10 : 1
+    const animate = proc()
     const cp1 = structuredClone(this.world.camPose)
-    for (const i of range(0, n + 1)) {
-      const r = i / n
-      this.queue.push([1, () => {
-        const pos = C.interVecL(cp0.pos, cp1.pos, r)
-        // console.log(JSON.stringify({ r: r, pos: pos, cp: [cp0.pos, cp1.pos] }))
-        this.camera.position.set(pos.x, pos.y, pos.z)
-        this.camera.up = C.interVec(cp0.top, cp1.top, r)
-        this.camera.lookAt(C.interVec(cp0.fore, cp1.fore, r).multiplyScalar(1e10))
-        this.camera.updateMatrix()
-      }])
-    }
+    const now = this.clock.getElapsedTime()
+    const t = animate ? 0.3 : 1 / 1000
+    this.queue.push(() => {
+      const r0 = Math.min(1, (this.clock.getElapsedTime() - now) / t)
+      const r = 1 - (1 - r0) ** 2
+      const pos = C.interVecL(cp0.pos, cp1.pos, r)
+      console.log(JSON.stringify({ rt: ((this.clock.elapsedTime - now) / t), r: r, pos: pos, cp: [cp0.pos, cp1.pos] }))
+      this.camera.position.set(pos.x, pos.y, pos.z)
+      this.camera.up = C.interVec(cp0.top, cp1.top, r)
+      this.camera.lookAt(C.interVec(cp0.fore, cp1.fore, r).multiplyScalar(1e10))
+      this.camera.updateMatrix()
+      return r0 == 1
+    })
   }
   setInputEvents() {
     const p = window;
@@ -202,9 +206,7 @@ class Main {
   animate() {
     this.stats.begin();
     if (0 < this.queue.length) {
-      this.queue[0][1]();
-      // console.log(JSON.stringify({ campos: this.camera.position }))
-      if (0 === --this.queue[0][0]) {
+      if (this.queue[0]()) {
         this.queue.shift();
       }
     }
