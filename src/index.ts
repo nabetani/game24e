@@ -28,7 +28,6 @@ class Main {
     const w = window.innerWidth
     const h = window.innerHeight
     this.camera.aspect = w / h
-    this.camera.setFocalLength(7)
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(w, h)
     this.flickTh = w / 7

@@ -19,7 +19,13 @@ const posToIx = (pos: xyz, s: xyz): number | null => {
     if (pos.z < 0 && s.z <= pos.z) { return null }
     return pos.x + s.x * (pos.y + s.y * pos.z)
 }
-
+const mulScalarXyz = (a: number, b: xyz): xyz => {
+    return {
+        x: a * b.x,
+        y: a * b.y,
+        z: a * b.z,
+    }
+}
 const addXyz = (a: xyz, b: xyz): xyz => {
     return {
         x: a.x + b.x,
@@ -109,7 +115,9 @@ export class World {
         return dirToXyz(this.iTop)
     }
     get camPose(): CamPoseType {
-        return { pos: this.pos, fore: this.fore, top: this.top }
+        const f = mulScalarXyz(-0.4, this.fore)
+        const p = addXyz(this.pos, f)
+        return { pos: p, fore: this.fore, top: this.top }
     }
 
     turnY(d: number): boolean {
