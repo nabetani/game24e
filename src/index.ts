@@ -20,6 +20,7 @@ class Main {
   stats = new Stats();
   world: World
   queue: DoSomething[] = []
+  animates: (() => void)[] = []
   touchStart: { x: number, y: number } | null = null
   touchMove: { x: number, y: number } | null = null
   flickTh = 40
@@ -44,12 +45,20 @@ class Main {
     });
     this.setInputEvents();
     this.initLight();
+    this.walk(() => false);
     this.initMap();
     this.clock.start()
-    this.walk(() => false);
   }
+
   initLight() {
-    this.scene.add(new THREE.AmbientLight(0x88ffff, 0.9))
+    this.scene.add(new THREE.AmbientLight(0x88ffff, 0.3))
+    const dl = (x: number, y: number, z: number, i: number) => {
+      const o = new THREE.DirectionalLight(0xffffff, i)
+      o.position.set(x, y, z)
+      this.scene.add(o)
+    }
+    dl(3, 10, 0, 0.5)
+    dl(1, -10, 1, 0.3)
     // let cix = 0
     // const cols = [0xff, 0xff00, 0xffff, 0xff00ff, 0xffff00, 0xffffff]
     // for (const d0 of [[1, 0.5, 0.1], [0.1, 1, 0.5], [0.5, 0.1, 1]]) {
@@ -151,6 +160,25 @@ class Main {
       }
     })
   }
+  setStartObj() {
+    const pos = this.world.pos
+    const ma = new THREE.MeshNormalMaterial({})
+    const size = 0.15
+    const ge = new THREE.TorusGeometry(size, size / 4, 15, 7)
+    const p = new THREE.Mesh(ge, ma)
+    this.animates.push(() => {
+      const t = this.clock.getElapsedTime()
+      const ta = t / 3
+      const tb = t / 17
+      const si = Math.sin(tb)
+      const co = Math.cos(tb)
+      const v0 = new THREE.Vector3(si * Math.sin(ta), si * Math.cos(ta), co)
+      p.setRotationFromAxisAngle(v0, Math.sin(t / 7) * 10)
+    })
+    p.position.set(pos.x, pos.y, pos.z)
+    this.scene.add(p)
+  }
+
   initMap() {
     const wallT = this.tloader.load("./assets/wall0.webp")
     const m0 = [
@@ -181,6 +209,7 @@ class Main {
       p.translateY(y)
       p.translateZ(z)
     }
+    this.setStartObj()
     for (const x of range(0, size.x)) {
       for (const y of range(0, size.y)) {
         for (const z of range(0, size.z)) {
@@ -204,6 +233,9 @@ class Main {
       if (this.queue[0]()) {
         this.queue.shift();
       }
+    }
+    for (const p of this.animates) {
+      p()
     }
     this.renderer.render(this.scene, this.camera)
     const s = () => this.animate();
