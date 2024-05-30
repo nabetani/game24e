@@ -28,6 +28,7 @@ class Main {
     const w = window.innerWidth
     const h = window.innerHeight
     this.camera.aspect = w / h
+    this.camera.setFocalLength(7)
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(w, h)
     this.flickTh = w / 7
@@ -42,7 +43,6 @@ class Main {
       this.camera.updateProjectionMatrix()
       this.renderer.setSize(window.innerWidth, window.innerHeight)
     });
-    this.setCamPose(this.camPose)
     this.setInputEvents();
     this.initLight();
     this.initMap();
@@ -62,16 +62,6 @@ class Main {
     //     this.scene.add(dl)
     //   }
     // }
-  }
-  camPose: W.CamPoseType = {
-    pos: new THREE.Vector3(0, 1, 1),
-    fore: new THREE.Vector3(0, 0, 1),
-    top: new THREE.Vector3(0, 1, 0),
-  }
-  setCamPose(cp: W.CamPoseType) {
-    this.camera.position.set(cp.pos.x, cp.pos.y, cp.pos.z)
-    this.camera.up = xyzToVec3(cp.top)
-    this.camera.lookAt(xyzToVec3(cp.fore).multiplyScalar(1e10))
   }
   walk(proc: () => boolean) {
     if (1 < this.queue.length) {
