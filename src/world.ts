@@ -52,9 +52,8 @@ const progress = (p: xyz, d: number): xyz => {
     }
 }
 
-
 const build = (seed: number): { walls: wall[], ws: xyz } => {
-    const ws = { x: 4, y: 9, z: 20 }
+    const ws = { x: 20, y: 20, z: 20 }
     const len = 20
     const walls: wall[] = [...range(0, ws.x * ws.y * ws.z)].map(() => (7 as wall))
     const rng: Rng = new Rng(seed)

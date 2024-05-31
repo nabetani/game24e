@@ -5,6 +5,7 @@ import { World } from './world'
 import *  as W from './world'
 import *  as C from './calc'
 import { range } from './calc'
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 
 type DoSomething = { (): boolean };
 
@@ -182,51 +183,60 @@ class Main {
 
   initMap() {
     const wallT = this.tloader.load("./assets/wall0.webp")
+    wallT.wrapS = THREE.RepeatWrapping
+    wallT.wrapT = THREE.RepeatWrapping
+    wallT.repeat.x = wallT.repeat.y = 1
+    const Mate = THREE.MeshBasicMaterial
     const m0 = [
-      new THREE.MeshLambertMaterial({ map: wallT }),
-      new THREE.MeshLambertMaterial({ map: wallT, color: 0xffff00 }),
+      new Mate({ map: wallT }),
+      new Mate({ map: wallT, color: 0xffff00 }),
     ]
     const m1 = [
-      new THREE.MeshLambertMaterial({ map: wallT, color: 0xffff }),
-      new THREE.MeshLambertMaterial({ map: wallT, color: 0xff00ff }),
+      new Mate({ map: wallT, color: 0xffff }),
+      new Mate({ map: wallT, color: 0xff00ff }),
     ]
     const m2 = [
-      new THREE.MeshLambertMaterial({ map: wallT, color: 0xff0000 }),
-      new THREE.MeshLambertMaterial({ map: wallT, color: 0xff00 }),
+      new Mate({ map: wallT, color: 0xff0000 }),
+      new Mate({ map: wallT, color: 0xff00 }),
     ]
-    const s0 = new THREE.MeshLambertMaterial({ color: 0xffaaaa })
-    const s1 = new THREE.MeshLambertMaterial({ color: 0xaaffaa })
-    const s2 = new THREE.MeshLambertMaterial({ color: 0xaaaaff })
+    const s0 = new Mate({ color: 0xffaaaa })
+    const s1 = new Mate({ color: 0xaaffaa })
+    const s2 = new Mate({ color: 0xaaaaff })
     const ms0 = [s0, s0]
     const ms1 = [s1, s1]
     const ms2 = [s2, s2]
-    const geometry = new THREE.BoxGeometry()
     const size = this.world.size
     const th = 0.05
-    const txyz = (p: THREE.Mesh, x: number, y: number, z: number, ax: 0 | 1 | 2) => {
-      const scale = new THREE.Vector3(ax == 0 ? th : 1, ax == 1 ? th : 1, ax == 2 ? th : 1)
-      p.applyMatrix4((new THREE.Matrix4()).scale(scale))
+    const g = [
+      new THREE.BoxGeometry(th, 1, 1),
+      new THREE.BoxGeometry(1, th, 1),
+      new THREE.BoxGeometry(1, 1, th)]
+    const txyz = (p: THREE.Mesh, x: number, y: number, z: number) => {
       p.translateX(x)
       p.translateY(y)
       p.translateZ(z)
     }
     this.setStartObj()
-    for (const x of range(0, size.x)) {
-      for (const y of range(0, size.y)) {
-        for (const z of range(0, size.z)) {
-          const wall = this.world.cellAt({ x: x, y: y, z: z })
-          for (const ax of [0, 1, 2]) {
+    let poco = 0
+    for (const ax of [0, 1, 2]) {
+      let geoms: any[] = []
+      for (const x of range(0, size.x)) {
+        for (const y of range(0, size.y)) {
+          for (const z of range(0, size.z)) {
+            const wall = this.world.cellAt({ x: x, y: y, z: z })
             const d = (a: number) => (a == ax ? -0.5 : 0)
             if ((wall & (1 << ax)) != 0) {
-              const ma = [...(ax == 0 ? m0 : ms0), ...(ax == 1 ? m1 : ms1), ...(ax == 2 ? m2 : ms2)]
-              const p = new THREE.Mesh(geometry, ma)
-              txyz(p, x + d(0), y + d(1), z + d(2), ax as (0 | 1 | 2))
-              this.scene.add(p)
+              const cg = g[ax].clone().translate(x + d(0), y + d(1), z + d(2))
+              geoms.push(cg)
             }
           }
+
         }
       }
+      const geometry = BufferGeometryUtils.mergeGeometries(geoms, true);
+      this.scene.add(new THREE.Mesh(geometry, new Mate({ map: wallT, color: 0xffffff << (ax * 8) })))
     }
+    console.log(`poco: ${poco * 12}`);
   }
   animate() {
     this.stats.begin();
@@ -242,6 +252,7 @@ class Main {
     const s = () => this.animate();
     requestAnimationFrame(s);
     this.stats.end();
+    // console.log(`renderer.info: ${JSON.stringify(this.renderer.info)}`)
   }
 }
 
