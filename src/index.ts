@@ -37,7 +37,6 @@ class Main {
     this.adaptToWindowSize()
     this.world = new World(1);
     document.body.appendChild(this.renderer.domElement)
-    document.body.appendChild(this.stats.dom);
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight
       this.camera.updateProjectionMatrix()
@@ -48,6 +47,8 @@ class Main {
     this.walk(() => false);
     this.initMap();
     this.clock.start()
+    this.stats.showPanel(0);
+    document.getElementById("stats")!.appendChild(this.stats.dom);
   }
 
   initLight() {
@@ -167,9 +168,9 @@ class Main {
     const ge = new THREE.TorusGeometry(size, size / 4, 15, 7)
     const p = new THREE.Mesh(ge, ma)
     this.animates.push(() => {
-      const t = this.clock.getElapsedTime()
+      const t = this.clock.getElapsedTime() * 2
       const ta = t / 3
-      const tb = t / 17
+      const tb = t / 17 + 1.5
       const si = Math.sin(tb)
       const co = Math.cos(tb)
       const v0 = new THREE.Vector3(si * Math.sin(ta), si * Math.cos(ta), co)
