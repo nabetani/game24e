@@ -192,42 +192,16 @@ class Main {
 
   initMap() {
     const wallT = this.tloader.load("./assets/wall0.webp")
-    wallT.wrapS = THREE.RepeatWrapping
-    wallT.wrapT = THREE.RepeatWrapping
-    wallT.repeat.x = wallT.repeat.y = 1
     const Mate = THREE.MeshLambertMaterial
-    const m0 = [
-      new Mate({ map: wallT }),
-      new Mate({ map: wallT, color: 0xffff00 }),
-    ]
-    const m1 = [
-      new Mate({ map: wallT, color: 0xffff }),
-      new Mate({ map: wallT, color: 0xff00ff }),
-    ]
-    const m2 = [
-      new Mate({ map: wallT, color: 0xff0000 }),
-      new Mate({ map: wallT, color: 0xff00 }),
-    ]
-    const s0 = new Mate({ color: 0xffaaaa })
-    const s1 = new Mate({ color: 0xaaffaa })
-    const s2 = new Mate({ color: 0xaaaaff })
-    const ms0 = [s0, s0]
-    const ms1 = [s1, s1]
-    const ms2 = [s2, s2]
     const size = this.world.size
     const th = 0.05
-    const g = [
-      new THREE.BoxGeometry(th, 1, 1),
-      new THREE.BoxGeometry(1, th, 1),
-      new THREE.BoxGeometry(1, 1, th)]
-    const txyz = (p: THREE.Mesh, x: number, y: number, z: number) => {
-      p.translateX(x)
-      p.translateY(y)
-      p.translateZ(z)
-    }
     this.setStartObj()
     let poco = 0
     for (const ax of [0, 1, 2]) {
+      const g = [
+        new THREE.BoxGeometry(th, 1, 1),
+        new THREE.BoxGeometry(1, th, 1),
+        new THREE.BoxGeometry(1, 1, th)][ax]
       let geoms: any[] = []
       for (const x of range(0, size.x)) {
         for (const y of range(0, size.y)) {
@@ -235,15 +209,18 @@ class Main {
             const wall = this.world.cellAt({ x: x, y: y, z: z })
             const d = (a: number) => (a == ax ? -0.5 : 0)
             if ((wall & (1 << ax)) != 0) {
-              const cg = g[ax].clone().translate(x + d(0), y + d(1), z + d(2))
+              const cg = g.clone().translate(x + d(0), y + d(1), z + d(2))
               geoms.push(cg)
             }
           }
-
         }
       }
       const geometry = BufferGeometryUtils.mergeGeometries(geoms, true);
-      const me = new THREE.Mesh(geometry, new Mate({ map: wallT, color: 0xffffff << (ax * 8) }))
+      const mate = new Mate({
+        map: wallT,
+        color: 0xffffff << (ax * 8),
+      })
+      const me = new THREE.Mesh(geometry, mate)
       me.receiveShadow = true;
       me.castShadow = true;
       this.scene.add(me)
