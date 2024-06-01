@@ -43,24 +43,30 @@ class Main {
       this.camera.updateProjectionMatrix()
       this.renderer.setSize(window.innerWidth, window.innerHeight)
     });
+    this.renderer.shadowMap.enabled = true;
     this.setInputEvents();
-    this.initLight();
     this.walk(() => false);
     this.initMap();
+    this.initLight();
     this.clock.start()
     this.stats.showPanel(0);
     document.getElementById("stats")!.appendChild(this.stats.dom);
   }
 
   initLight() {
-    this.scene.add(new THREE.AmbientLight(0x88ffff, 0.3))
-    const dl = (x: number, y: number, z: number, i: number) => {
-      const o = new THREE.DirectionalLight(0xffffff, i)
-      o.position.set(x, y, z)
-      this.scene.add(o)
-    }
-    dl(3, 10, 0, 0.5)
-    dl(1, -10, 1, 0.3)
+    this.scene.add(new THREE.AmbientLight(0x88ffff, 0.7))
+    const pol = new THREE.PointLight(0xffffff, 10, 20)
+    pol.position.copy(this.world.pos)
+    pol.position.add({ x: -0.3, y: 0.4, z: 0 })
+    pol.castShadow = true
+    this.scene.add(pol)
+    // const dl = (x: number, y: number, z: number, i: number) => {
+    //   const o = new THREE.DirectionalLight(0xffffff, i)
+    //   o.position.set(x, y, z)
+    //   this.scene.add(o)
+    // }
+    // dl(3, 10, 0, 0.5)
+    // dl(1, -10, 1, 0.3)
     // let cix = 0
     // const cols = [0xff, 0xff00, 0xffff, 0xff00ff, 0xffff00, 0xffffff]
     // for (const d0 of [[1, 0.5, 0.1], [0.1, 1, 0.5], [0.5, 0.1, 1]]) {
@@ -164,10 +170,13 @@ class Main {
   }
   setStartObj() {
     const pos = this.world.pos
-    const ma = new THREE.MeshNormalMaterial({})
-    const size = 0.15
-    const ge = new THREE.TorusGeometry(size, size / 4, 15, 7)
-    const p = new THREE.Mesh(ge, ma)
+    const ma = new THREE.MeshStandardMaterial({
+      color: 0x002844
+    })
+    const size = 1 / 20
+    const ge = new THREE.TorusGeometry(size, size / 3, 8, 7)
+    const me = new THREE.Mesh(ge, ma)
+    me.castShadow = me.receiveShadow = true
     this.animates.push(() => {
       const t = this.clock.getElapsedTime() * 2
       const ta = t / 3
@@ -175,10 +184,10 @@ class Main {
       const si = Math.sin(tb)
       const co = Math.cos(tb)
       const v0 = new THREE.Vector3(si * Math.sin(ta), si * Math.cos(ta), co)
-      p.setRotationFromAxisAngle(v0, Math.sin(t / 7) * 10)
+      me.setRotationFromAxisAngle(v0, Math.sin(t / 7) * 10)
     })
-    p.position.set(pos.x, pos.y, pos.z)
-    this.scene.add(p)
+    me.position.set(pos.x, pos.y, pos.z)
+    this.scene.add(me)
   }
 
   initMap() {
@@ -186,7 +195,7 @@ class Main {
     wallT.wrapS = THREE.RepeatWrapping
     wallT.wrapT = THREE.RepeatWrapping
     wallT.repeat.x = wallT.repeat.y = 1
-    const Mate = THREE.MeshBasicMaterial
+    const Mate = THREE.MeshLambertMaterial
     const m0 = [
       new Mate({ map: wallT }),
       new Mate({ map: wallT, color: 0xffff00 }),
@@ -234,7 +243,10 @@ class Main {
         }
       }
       const geometry = BufferGeometryUtils.mergeGeometries(geoms, true);
-      this.scene.add(new THREE.Mesh(geometry, new Mate({ map: wallT, color: 0xffffff << (ax * 8) })))
+      const me = new THREE.Mesh(geometry, new Mate({ map: wallT, color: 0xffffff << (ax * 8) }))
+      me.receiveShadow = true;
+      me.castShadow = true;
+      this.scene.add(me)
     }
     console.log(`poco: ${poco * 12}`);
   }

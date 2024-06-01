@@ -114,7 +114,7 @@ export class World {
         return dirToXyz(this.iTop)
     }
     get camPose(): CamPoseType {
-        const f = mulScalarXyz(-0.4, this.fore)
+        const f = mulScalarXyz(-0.3, this.fore)
         const p = addXyz(this.pos, f)
         return { pos: p, fore: this.fore, top: this.top }
     }
