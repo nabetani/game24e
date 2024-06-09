@@ -13,6 +13,52 @@ const xyzToVec3 = (i: W.xyz): THREE.Vector3 => {
   return new THREE.Vector3(i.x, i.y, i.z)
 }
 
+const drawF = (ctx: CanvasRenderingContext2D, f: number, x0: number, y0: number, r0: number, th0: number, dth: number) => {
+  if (f == 1) {
+    ctx.beginPath()
+    ctx.ellipse(x0, y0, r0, r0, 0, 0, Math.PI * 2)
+    ctx.fill()
+  } else {
+    const cands = [...[...range(1, f - 1)].map(x => f - x), f]
+    for (const i of cands) {
+      if (f % i != 0) {
+        continue
+      }
+      const as = Math.asin(Math.PI / i)
+      const r = i <= 3 ? r0 / (1.5 + i / 4) : r0 * as / (1 + as) * 0.9
+      for (const t of range(0, i)) {
+        const th = (t + dth) * Math.PI * 2 / i
+        const x = x0 + (r0 - r) * Math.cos(th + th0)
+        const y = y0 + (r0 - r) * Math.sin(th + th0)
+        drawF(ctx, f / i, x, y, r, th + th0, dth)
+      }
+      return
+    }
+  }
+}
+
+const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: number) => {
+  const gradient = ctx.createLinearGradient(0, 0, cw, cw);
+  const col = (a: string, b: string, ix: number): string => {
+    return `#${ix == 0 ? a : b}${ix == 1 ? a : b}${ix == 2 ? a : b}`
+  }
+  gradient.addColorStop(0, col("2", "a", ax))
+  gradient.addColorStop(1, col("8", "c", ax))
+  ctx.fillStyle = gradient;
+  const g = 10
+  ctx.fillRect(g, g, cw - g * 2, cw - g * 2)
+  ctx.fillStyle = col("8", "1", ax)
+  drawF(ctx, f + 1, cw / 2, cw / 2, cw * 0.4, 0, 1 / (ax + 1))
+}
+
+const newCanvas = (cw: number): HTMLCanvasElement => {
+  const canvas = document.createElement("canvas")
+  canvas.setAttribute("width", `${cw}`)
+  canvas.setAttribute("height", `${cw}`)
+  document.getElementsByTagName("body")[0].appendChild(canvas)
+  return canvas
+}
+
 class Main {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 1000)
@@ -223,21 +269,13 @@ class Main {
       }
     }
     geoms.forEach((geomArray, k) => {
-      const canvas = document.createElement("canvas")
       const cw = 512
-      canvas.setAttribute("width", `${cw}`)
-      canvas.setAttribute("height", `${cw}`)
-      document.getElementsByTagName("body")[0].appendChild(canvas)
+      const canvas = newCanvas(cw)
       const ctx = canvas.getContext("2d")!
       const ax = k >> 10
       const f = k & 1023
-      const w = f * 30 + ax
-      ctx.fillStyle = "blue"
-      ctx.fillRect(0, 0, 512, 512)
-      ctx.fillStyle = "green"
-      ctx.fillRect(256 - w / 2, 128, w, 256)
-      ctx.fillStyle = "red"
-      ctx.fillRect(256 - w / 2, 256 - w / 2, w, w)
+      console.log({ ax: ax, f: f })
+      drawWall(ctx, cw, ax, f)
       const mate = new Mate({
         map: new THREE.CanvasTexture(canvas),
       })
