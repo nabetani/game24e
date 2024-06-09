@@ -197,12 +197,12 @@ class Main {
     const th = 0.05
     this.setStartObj()
     let poco = 0
+    let geoms: Map<number, THREE.BoxGeometry[]> = new Map<number, THREE.BoxGeometry[]>()
     for (const ax of [0, 1, 2]) {
       const g = [
         new THREE.BoxGeometry(th, 1, 1),
         new THREE.BoxGeometry(1, th, 1),
         new THREE.BoxGeometry(1, 1, th)][ax]
-      let geoms: Map<number, THREE.BoxGeometry[]> = new Map<number, THREE.BoxGeometry[]>()
       for (const x of range(0, size.x)) {
         for (const y of range(0, size.y)) {
           for (const z of range(0, size.z)) {
@@ -210,7 +210,7 @@ class Main {
             const d = (a: number) => (a == ax ? -0.5 : 0)
             if ((wall & (1 << ax)) != 0) {
               const cg = g.clone().translate(x + d(0), y + d(1), z + d(2))
-              const key = ax * 100 + [x, y, z][ax]
+              const key = ax * 1024 + [x, y, z][ax]
               const v = geoms.get(key)
               if (v === undefined) {
                 geoms.set(key, [cg])
@@ -221,18 +221,32 @@ class Main {
           }
         }
       }
-      geoms.forEach((geomArray) => {
-        const mate = new Mate({
-          map: wallT,
-          color: 0xffffff << (ax * 8),
-        })
-        const geometry = BufferGeometryUtils.mergeGeometries(geomArray, true);
-        const me = new THREE.Mesh(geometry, mate)
-        me.receiveShadow = true;
-        me.castShadow = true;
-        this.scene.add(me)
-      });
     }
+    geoms.forEach((geomArray, k) => {
+      const canvas = document.createElement("canvas")
+      const cw = 512
+      canvas.setAttribute("width", `${cw}`)
+      canvas.setAttribute("height", `${cw}`)
+      document.getElementsByTagName("body")[0].appendChild(canvas)
+      const ctx = canvas.getContext("2d")!
+      const ax = k >> 10
+      const f = k & 1023
+      const w = f * 30 + ax
+      ctx.fillStyle = "blue"
+      ctx.fillRect(0, 0, 512, 512)
+      ctx.fillStyle = "green"
+      ctx.fillRect(256 - w / 2, 128, w, 256)
+      ctx.fillStyle = "red"
+      ctx.fillRect(256 - w / 2, 256 - w / 2, w, w)
+      const mate = new Mate({
+        map: new THREE.CanvasTexture(canvas),
+      })
+      const geometry = BufferGeometryUtils.mergeGeometries(geomArray, true);
+      const me = new THREE.Mesh(geometry, mate)
+      me.receiveShadow = true;
+      me.castShadow = true;
+      this.scene.add(me)
+    });
     console.log(`poco: ${poco * 12}`);
   }
   animate() {
