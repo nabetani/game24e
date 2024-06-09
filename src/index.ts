@@ -74,12 +74,34 @@ const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: numb
   ctx.fillStyle = baseCol;
   const g = 10
   ctx.fillRect(g, g, cw - g * 2, cw - g * 2)
+  {
+    for (const i of range(0, ax + 1)) {
+      ctx.save()
+      ctx.translate(cw / 2, cw / 2)
+      const rot = ax == 0 ? 0 : [-1, 1, 0][i]
+      ctx.rotate(rot * Math.PI / 8)
+      ctx.translate(-cw / 2, -cw / 2)
+      const N = 7
+      ctx.fillStyle = col(20, 0, 0)
+      const ww = cw * 1.4
+      for (const ix of range(0, N)) {
+        const x = ww * (ix * 2 + 1) / (N * 2)
+        const w = ww / (N * 2) * (1 - ax / 4)
+        ctx.fillRect(x, (cw - ww) / 2, w, ww)
+      }
+      ctx.restore()
+    }
+  }
   const markCol = ctx.createLinearGradient(0, cw, cw, 0);
   const dcol = 90
   markCol.addColorStop(0, col(10, 100, ax * 120 + 180 + dcol))
   markCol.addColorStop(1, col(10, 20, ax * 120 + 180 - dcol))
   ctx.fillStyle = markCol
   drawF(ctx, f + 1, cw / 2, cw / 2, cw * 0.4, 0, 1 / (ax + 1))
+  ctx.strokeStyle = "black"
+  ctx.lineWidth = g * 2
+  ctx.strokeRect(0, 0, cw, cw)
+
 }
 
 const newCanvas = (cw: number): HTMLCanvasElement => {
