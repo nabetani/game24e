@@ -37,17 +37,48 @@ const drawF = (ctx: CanvasRenderingContext2D, f: number, x0: number, y0: number,
   }
 }
 
-const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: number) => {
-  const gradient = ctx.createLinearGradient(0, 0, cw, cw);
-  const col = (a: string, b: string, ix: number): string => {
-    return `#${ix == 0 ? a : b}${ix == 1 ? a : b}${ix == 2 ? a : b}`
+const labToRgb = (l: number, a: number, b: number): string => {
+  const xn = 0.95
+  const yn = 1
+  const zn = 1.089
+  const sig = 6 / 29
+  const fi = (t: number) => (t < sig ? (3 * sig ** 2 * (t - 4 / 29)) : t ** 3)
+  const x = xn * fi((l + 16) / 116 + a / 500)
+  const y = yn * fi((l + 16) / 116)
+  const z = zn * fi((l + 16) / 116 + b / 500)
+
+  const cs = (x: number) => x < 0.0031308 ? 12.19 * x : (
+    1.055 * x ** (1 / 2.4) - 0.055
+  )
+  const sr = cs(+3.2406 * x - 1.5372 * y - 0.4986 * z)
+  const sg = cs(-0.9689 * x + 1.8758 * y + 0.0415 * z)
+  const sb = cs(+0.0557 * x - 0.2040 * y + 1.0570 * z)
+  const col = (x: number): string => {
+    const v0 = Math.round(x * 255)
+    const v = v0 < 0 ? 0 : (v0 < 255 ? v0 : 255)
+    return `${(v >> 4).toString(16)}${(v & 15).toString(16)}`
   }
-  gradient.addColorStop(0, col("2", "a", ax))
-  gradient.addColorStop(1, col("8", "c", ax))
-  ctx.fillStyle = gradient;
+  return `#${col(sr)}${col(sg)}${col(sb)}`
+}
+
+const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: number) => {
+  const col = (l: number, sa: number, co: number): string => {
+    const t = co * Math.PI / 180
+    const a = sa * Math.sin(t)
+    const b = sa * Math.cos(t)
+    return labToRgb(l, a, b)
+  }
+  const baseCol = ctx.createLinearGradient(0, 0, cw, cw);
+  baseCol.addColorStop(0, col(80, 50, ax * 120))
+  baseCol.addColorStop(1, col(30, 100, ax * 120))
+  ctx.fillStyle = baseCol;
   const g = 10
   ctx.fillRect(g, g, cw - g * 2, cw - g * 2)
-  ctx.fillStyle = col("8", "1", ax)
+  const markCol = ctx.createLinearGradient(0, cw, cw, 0);
+  const dcol = 90
+  markCol.addColorStop(0, col(10, 100, ax * 120 + 180 + dcol))
+  markCol.addColorStop(1, col(10, 20, ax * 120 + 180 - dcol))
+  ctx.fillStyle = markCol
   drawF(ctx, f + 1, cw / 2, cw / 2, cw * 0.4, 0, 1 / (ax + 1))
 }
 
