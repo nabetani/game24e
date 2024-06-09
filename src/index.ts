@@ -202,7 +202,7 @@ class Main {
         new THREE.BoxGeometry(th, 1, 1),
         new THREE.BoxGeometry(1, th, 1),
         new THREE.BoxGeometry(1, 1, th)][ax]
-      let geoms: any[] = []
+      let geoms: Map<number, THREE.BoxGeometry[]> = new Map<number, THREE.BoxGeometry[]>()
       for (const x of range(0, size.x)) {
         for (const y of range(0, size.y)) {
           for (const z of range(0, size.z)) {
@@ -210,20 +210,28 @@ class Main {
             const d = (a: number) => (a == ax ? -0.5 : 0)
             if ((wall & (1 << ax)) != 0) {
               const cg = g.clone().translate(x + d(0), y + d(1), z + d(2))
-              geoms.push(cg)
+              const key = ax * 100 + [x, y, z][ax]
+              const v = geoms.get(key)
+              if (v === undefined) {
+                geoms.set(key, [cg])
+              } else {
+                v.push(cg)
+              }
             }
           }
         }
       }
-      const geometry = BufferGeometryUtils.mergeGeometries(geoms, true);
-      const mate = new Mate({
-        map: wallT,
-        color: 0xffffff << (ax * 8),
-      })
-      const me = new THREE.Mesh(geometry, mate)
-      me.receiveShadow = true;
-      me.castShadow = true;
-      this.scene.add(me)
+      geoms.forEach((geomArray) => {
+        const mate = new Mate({
+          map: wallT,
+          color: 0xffffff << (ax * 8),
+        })
+        const geometry = BufferGeometryUtils.mergeGeometries(geomArray, true);
+        const me = new THREE.Mesh(geometry, mate)
+        me.receiveShadow = true;
+        me.castShadow = true;
+        this.scene.add(me)
+      });
     }
     console.log(`poco: ${poco * 12}`);
   }
