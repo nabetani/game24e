@@ -21,9 +21,9 @@ export type CamPoseType = {
 }
 
 const posToIx = (pos: xyz, s: xyz): number | null => {
-    if (pos.x < 0 && s.x <= pos.x) { return null }
-    if (pos.y < 0 && s.y <= pos.y) { return null }
-    if (pos.z < 0 && s.z <= pos.z) { return null }
+    if (pos.x < 0 || s.x <= pos.x) { return null }
+    if (pos.y < 0 || s.y <= pos.y) { return null }
+    if (pos.z < 0 || s.z <= pos.z) { return null }
     return pos.x + s.x * (pos.y + s.y * pos.z)
 }
 
@@ -68,6 +68,18 @@ const dirToXyz = (d: number): xyz => {
         z: [0, 0, 0, 0, 1, -1][d],
     }
 }
+
+const neiboursXyz = (): xyz[] => {
+    return [
+        { x: -1, y: 0, z: 0 },
+        { x: 1, y: 0, z: 0 },
+        { x: 0, y: -1, z: 0 },
+        { x: 0, y: 1, z: 0 },
+        { x: 0, y: 0, z: -1 },
+        { x: 0, y: 0, z: 1 },
+    ]
+}
+
 const invDir = (d: number): number => {
     return d ^ 1;
 }
@@ -118,6 +130,7 @@ class Builder {
         }
     }
     makeRoom(pos: xyz, rs: xyz) {
+        console.log({ n: "makeRoom", p0: pos, rs: rs, p1: addXyz(pos, rs) })
         this.eachPos(rs, (d: xyz) => {
             const ix = this.posToIx(addXyz(pos, d))!
             this.reachables.add(ix)
@@ -171,14 +184,18 @@ class Builder {
             p = addXyz(p, dp)
         }
     }
+    randomReachable(): xyz {
+        const ix = this.rng.sampleOfIter(this.reachables.keys())
+        console.log({ ix: ix, pos: this.ixToPos(ix) })
+        return this.ixToPos(ix)!
+    }
     makeRing() {
-        const startIx = this.rng.sampleOfIter(this.reachables.keys())
-        const p0 = this.ixToPos(startIx)!
+        const p0 = this.randomReachable()
         const randPos = (): xyz => {
             return {
-                x: this.rng.i(this.size.x - 1),
-                y: this.rng.i(this.size.y - 1),
-                z: this.rng.i(this.size.z - 1)
+                x: this.rng.i(this.size.x - 2),
+                y: this.rng.i(this.size.y - 2),
+                z: this.rng.i(this.size.z - 2)
             }
         }
         const p1 = randPos()
@@ -187,12 +204,37 @@ class Builder {
         this.makePath(p1, p2)
         this.makePath(p2, p0)
     }
+    canGoTo(p: xyz): boolean {
+        return 0 <= p.x && p.x < this.size.x - 1 &&
+            0 <= p.y && p.y < this.size.y - 1 &&
+            0 <= p.z && p.z < this.size.z - 1
+    }
+    dig() {
+        console.log("dig")
+        var p0 = this.randomReachable()
+        for (const _ of range(0, 4)) {
+            if (p0 == null) {
+                return
+            }
+            console.log({ p0: p0 })
+            const d = this.rng.sampleOfIter(neiboursXyz().values())
+            const p1 = addXyz(p0, d)
+            const ix1 = this.posToIx(p1)
+            if (ix1 == null || this.reachables.has(ix1) || !this.canGoTo(p1)) {
+                continue
+            }
+            this.makeCuboid(p0, d)
+            p0 = p1
+        }
+    }
     build() {
         this.makeRoom({ x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
-        for (const _ of range(0, 7)) {
+        for (const _ of range(0, 1)) {
             this.makeRing()
         }
-        this.makePath({ x: 0, y: 0, z: 0 }, { x: 4, y: 6, z: 8 })
+        for (const _ of range(0, 1)) {
+            this.dig()
+        }
         this.reachables.forEach(e => {
             console.log(this.ixToPos(e))
         })
@@ -205,7 +247,6 @@ const build = (seed: number): { walls: wall[], ws: xyz } => {
     b.build()
     return { walls: b.walls, ws: b.size }
 }
-
 
 export class World {
     walls: wall[]
@@ -246,14 +287,14 @@ export class World {
     move(): boolean {
         const d = dirToXyz(this.iFore)
         const dest = addXyz(this.pos, d)
-        // const w0 = this.cellAt(this.pos)
-        // const w1 = this.cellAt(dest)
-        // const wallExists = (() => {
-        //     const w = [w1, w0][this.iFore & 1]
-        //     const b = 1 << ((this.iFore & 6) / 2)
-        //     return 0 != (w & b);
-        // })()
-        // if (wallExists) { return false }
+        const w0 = this.cellAt(this.pos)
+        const w1 = this.cellAt(dest)
+        const wallExists = (() => {
+            const w = [w1, w0][this.iFore & 1]
+            const b = 1 << ((this.iFore & 6) / 2)
+            return 0 != (w & b);
+        })()
+        if (wallExists) { return false }
         this.pos = dest
         return true
     }
