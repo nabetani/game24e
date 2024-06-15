@@ -247,22 +247,35 @@ class Builder {
         c.z = Math.min(this.size.z - s.z - 2, c.z)
         this.makeRoom(c, s)
     }
+    farPos(ax: number): xyz {
+        const x = (): number => this.size.x - 4 - this.rng.i(3)
+        const y = (): number => this.size.y - 4 - this.rng.i(3)
+        const z = (): number => this.size.z - 4 - this.rng.i(3)
+        switch (ax) {
+            case 0: return { x: this.size.x - 2, y: y(), z: z() }
+            case 1: return { x: x(), y: this.size.y - 2, z: z() }
+            case 2: return { x: x(), y: y(), z: this.size.z - 2 }
+        }
+        throw "logic error"
+    }
     build() {
         this.makeRoom({ x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
-        // this.makeRoom({ x: 0, y: 0, z: 0 }, { x: 2, y: 2, z: 2 })
         const rep = (n: number, proc: () => void) => {
             for (const _ of range(0, n)) {
                 proc()
             }
+        }
+        for (const a of range(0, 3)) {
+            this.makePath({ x: 0, y: 0, z: 0 }, this.farPos(a))
         }
         rep(2, () => this.makeRing())
         this.centerRoom()
         rep(2, () => this.dig())
         rep(6, () => this.makeRing())
         rep(6, () => this.dig())
-        // this.reachables.forEach(e => {
-        //     console.log(this.ixToPos(e))
-        // })
+        this.reachables.forEach(e => {
+            console.log(this.ixToPos(e))
+        })
     }
     canMove(p: xyz, d: xyz): boolean {
         const w0 = this.walls[this.posToIx(p)!]
@@ -375,7 +388,7 @@ export class World {
         const w0 = this.cellAt(this.pos)
         const w1 = this.cellAt(dest)
         const wallExists = (() => {
-            const coli = false
+            const coli = true
             if (coli) {
                 const w = [w1, w0][this.iFore & 1]
                 const b = 1 << ((this.iFore & 6) / 2)
