@@ -171,8 +171,27 @@ class Builder {
             p = addXyz(p, dp)
         }
     }
+    makeRing() {
+        const startIx = this.rng.sampleOfIter(this.reachables.keys())
+        const p0 = this.ixToPos(startIx)!
+        const randPos = (): xyz => {
+            return {
+                x: this.rng.i(this.size.x - 1),
+                y: this.rng.i(this.size.y - 1),
+                z: this.rng.i(this.size.z - 1)
+            }
+        }
+        const p1 = randPos()
+        const p2 = randPos()
+        this.makePath(p0, p1)
+        this.makePath(p1, p2)
+        this.makePath(p2, p0)
+    }
     build() {
         this.makeRoom({ x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
+        for (const _ of range(0, 7)) {
+            this.makeRing()
+        }
         this.makePath({ x: 0, y: 0, z: 0 }, { x: 4, y: 6, z: 8 })
         this.reachables.forEach(e => {
             console.log(this.ixToPos(e))

@@ -50,6 +50,11 @@ export class Rng {
     const n = this.next() + 1; // 1〜2**32
     const f = n / (0x100000001); // 0〜1 両端含まず
     return (f * 2 - 1) * d;
-
   }
+  sampleOfIter<T>(it: IterableIterator<T>): T {
+    const a = [...it]
+    const ix = this.i(a.length)
+    return a[ix]
+  }
+
 }
