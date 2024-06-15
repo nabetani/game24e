@@ -281,7 +281,8 @@ class Main {
     items.forEach((i) => {
       this.addPointlight(i.p, 0xffffaa, 1)
     })
-    this.addPointlight({ x: 0.1, y: 0.1, z: 0.1 }, 0xffffff, 3)
+    const lp = 0.1
+    this.addPointlight({ x: -lp, y: -lp, z: -lp }, 0xffffff, 2)
     items.push({ id: -1, p: this.world.pos })
     for (const item of items) {
       const ma = new THREE.MeshStandardMaterial({
