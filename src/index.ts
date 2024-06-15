@@ -104,9 +104,9 @@ const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: numb
           ctx.beginPath()
           const d0 = Math.PI / 5
           const d1 = Math.PI * 2 - d0
-          const r0 = r * 0.8
+          const [r0, r1] = [r * 0.8, r * 0.7]
           ctx.ellipse(x, y, r0, r0, th, d0, d1)
-          ctx.ellipse(x, y, r, r, th, d1, d0, true)
+          ctx.ellipse(x, y, r1, r1, th, d1, d0, true)
           ctx.fill()
         }
         break
