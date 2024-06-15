@@ -2,11 +2,17 @@ import { range } from "./calc"
 import { Rng } from "./rng"
 
 
-export type wall = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+export type wall = number
 export const wallX: wall = 1
 export const wallY: wall = 2
 export const wallZ: wall = 4
+export const emptyX: wall = 0x10
+export const emptyY: wall = 0x20
+export const emptyZ: wall = 0x40
+
 export type xyz = { x: number, y: number, z: number }
+
+
 export type CamPoseType = {
     readonly pos: xyz,
     readonly fore: xyz,
@@ -26,6 +32,10 @@ const mulScalarXyz = (a: number, b: xyz): xyz => {
         z: a * b.z,
     }
 }
+const lessThanXyz = (a: xyz, b: xyz): boolean => {
+    return a.x < b.x && a.y < b.y && a.z < b.z
+}
+
 const addXyz = (a: xyz, b: xyz): xyz => {
     return {
         x: a.x + b.x,
@@ -52,52 +62,59 @@ const progress = (p: xyz, d: number): xyz => {
     }
 }
 
-const build = (seed: number): { walls: wall[], ws: xyz } => {
-    const ws = { x: 20, y: 20, z: 20 }
-    const len = 20
-    const walls: wall[] = [...range(0, ws.x * ws.y * ws.z)].map(() => (7 as wall))
-    const rng: Rng = new Rng(seed)
-    const inWorld = (p: xyz): boolean => {
-        return (0 <= p.x && p.x + 1 < ws.x &&
-            0 <= p.y && p.y + 1 < ws.y &&
-            0 <= p.z && p.z + 1 < ws.z)
+class Builder {
+    size: xyz
+    walls: wall[]
+    rng: Rng
+    constructor(size: xyz, seed: number) {
+        this.size = size
+        this.walls = [...range(0, size.x * size.y * size.z)].map(() => (0 as wall))
+        this.rng = new Rng(seed)
     }
-    for (const i of range(0, 6)) {
-        let dir = i % 6
-        let pos = { x: 0, y: 0, z: 0 }
-        for (const _ of range(0, len)) {
-            const npos = ((): xyz | null => {
-                for (const _ of range(0, 6)) {
-                    const npos = progress(pos, dir)
-                    if (inWorld(npos)) { return npos }
-                    dir = rng.i(6)
+    eachPos(rs: xyz, proc: (d: xyz) => void) {
+        for (const x of range(0, rs.x)) {
+            for (const y of range(0, rs.y)) {
+                for (const z of range(0, rs.z)) {
+                    proc({ x: x, y: y, z: z })
                 }
-                return null
-            })()
-            if (npos == null) {
-                break
-            }
-            const dp = dirToXyz(dir)
-            if (dp.x < 0) {
-                walls[posToIx(pos, ws)!] &= ~wallX
-            } else if (0 < dp.x) {
-                walls[posToIx(npos, ws)!] &= ~wallX
-            } else if (dp.y < 0) {
-                walls[posToIx(pos, ws)!] &= ~wallY
-            } else if (0 < dp.y) {
-                walls[posToIx(npos, ws)!] &= ~wallY
-            } else if (dp.z < 0) {
-                walls[posToIx(pos, ws)!] &= ~wallZ
-            } else if (0 < dp.z) {
-                walls[posToIx(npos, ws)!] &= ~wallZ
-            }
-            pos = npos
-            if (rng.i(3) == 0) {
-                dir = rng.i(6)
             }
         }
     }
-    return { walls: walls, ws: ws }
+    setWallByIx(ix: number, w: wall, make: boolean, clean: boolean) {
+        if (make) {
+            if (0 == (this.walls[ix] & (w << 4))) {
+                this.walls[ix] |= w
+            }
+        } else if (clean) {
+            this.walls[ix] &= ~w
+            this.walls[ix] |= (w << 4)
+        }
+    }
+    makeRoom(pos: xyz, rs: xyz) {
+        this.eachPos(addXyz(rs, { x: 1, y: 1, z: 1 }), (d: xyz) => {
+            const ix = posToIx(addXyz(pos, d), this.size)!
+            this.setWallByIx(ix, wallX,
+                (d.x == 0 || d.x == rs.x) && d.y != rs.y && d.z != rs.z,
+                (0 < d.x && d.x < rs.x) && lessThanXyz(d, rs))
+            this.setWallByIx(ix, wallY,
+                (d.y == 0 || d.y == rs.y) && d.x != rs.x && d.z != rs.z,
+                (0 < d.y && d.y < rs.y) && lessThanXyz(d, rs))
+            this.setWallByIx(ix, wallZ,
+                (d.z == 0 || d.z == rs.z) && d.y != rs.y && d.x != rs.x,
+                (0 < d.z && d.z < rs.z) && lessThanXyz(d, rs))
+        })
+    }
+    build() {
+        this.makeRoom({ x: 0, y: 0, z: 0 }, { x: 4, y: 5, z: 6 })
+        this.makeRoom({ x: 3, y: 3, z: 3 }, { x: 4, y: 5, z: 6 })
+    }
+}
+
+const build = (seed: number): { walls: wall[], ws: xyz } => {
+    const wsbase = 10
+    const b = new Builder({ x: wsbase, y: wsbase, z: wsbase }, 1)
+    b.build()
+    return { walls: b.walls, ws: b.size }
 }
 
 
