@@ -177,32 +177,15 @@ class Main {
     this.stats.showPanel(0);
     document.getElementById("stats")!.appendChild(this.stats.dom);
   }
+  addPointlight(pos: W.xyz, col: number, intensity: number) {
+    const pol = new THREE.PointLight(col, intensity, 0)
+    pol.position.copy(pos)
+    pol.castShadow = true
+    this.scene.add(pol)
+  }
 
   initLight() {
     this.scene.add(new THREE.AmbientLight(0x88ffff, 0.7))
-    const pol = new THREE.PointLight(0xffffff, 10, 20)
-    pol.position.copy(this.world.pos)
-    pol.position.add({ x: -0.3, y: 0.4, z: 0 })
-    pol.castShadow = true
-    this.scene.add(pol)
-    // const dl = (x: number, y: number, z: number, i: number) => {
-    //   const o = new THREE.DirectionalLight(0xffffff, i)
-    //   o.position.set(x, y, z)
-    //   this.scene.add(o)
-    // }
-    // dl(3, 10, 0, 0.5)
-    // dl(1, -10, 1, 0.3)
-    // let cix = 0
-    // const cols = [0xff, 0xff00, 0xffff, 0xff00ff, 0xffff00, 0xffffff]
-    // for (const d0 of [[1, 0.5, 0.1], [0.1, 1, 0.5], [0.5, 0.1, 1]]) {
-    //   for (const s of [-1, 1]) {
-    //     const d = d0.map((e) => e * s)
-    //     const dl = new THREE.DirectionalLight(cols[cix], 0.5)
-    //     ++cix
-    //     dl.position.set(d[0], d[1], d[2]).normalize();
-    //     this.scene.add(dl)
-    //   }
-    // }
   }
   walk(proc: () => boolean) {
     if (1 < this.queue.length) {
@@ -295,6 +278,10 @@ class Main {
   }
   placeObjects() {
     const items = [...this.world.items]
+    items.forEach((i) => {
+      this.addPointlight(i.p, 0xffffaa, 1)
+    })
+    this.addPointlight({ x: 0.1, y: 0.1, z: 0.1 }, 0xffffff, 3)
     items.push({ id: -1, p: this.world.pos })
     for (const item of items) {
       const ma = new THREE.MeshStandardMaterial({

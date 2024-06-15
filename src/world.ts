@@ -70,7 +70,13 @@ const dirToXyz = (d: number): xyz => {
         z: [0, 0, 0, 0, 1, -1][d],
     }
 }
-
+const intDivXyz = (a: xyz, d: number): xyz => {
+    return {
+        x: Math.floor(a.x / d),
+        y: Math.floor(a.y / d),
+        z: Math.floor(a.z / d)
+    }
+}
 const neiboursXyz = (): xyz[] => {
     return [
         { x: -1, y: 0, z: 0 },
@@ -229,18 +235,34 @@ class Builder {
             p0 = p1
         }
     }
+    centerRoom() {
+        const c = this.randomReachable()
+        const s = {
+            x: this.rng.i(4) + 1,
+            y: this.rng.i(4) + 1,
+            z: this.rng.i(4) + 1
+        }
+        c.x = Math.min(this.size.x - s.x - 2, c.x)
+        c.y = Math.min(this.size.y - s.y - 2, c.y)
+        c.z = Math.min(this.size.z - s.z - 2, c.z)
+        this.makeRoom(c, s)
+    }
     build() {
         this.makeRoom({ x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
         // this.makeRoom({ x: 0, y: 0, z: 0 }, { x: 2, y: 2, z: 2 })
-        for (const _ of range(0, 1)) {
-            this.makeRing()
+        const rep = (n: number, proc: () => void) => {
+            for (const _ of range(0, n)) {
+                proc()
+            }
         }
-        for (const _ of range(0, 1)) {
-            this.dig()
-        }
-        this.reachables.forEach(e => {
-            console.log(this.ixToPos(e))
-        })
+        rep(2, () => this.makeRing())
+        this.centerRoom()
+        rep(2, () => this.dig())
+        rep(6, () => this.makeRing())
+        rep(6, () => this.dig())
+        // this.reachables.forEach(e => {
+        //     console.log(this.ixToPos(e))
+        // })
     }
     canMove(p: xyz, d: xyz): boolean {
         const w0 = this.walls[this.posToIx(p)!]
@@ -303,8 +325,8 @@ class Builder {
 }
 
 const build = (seed: number): { walls: wall[], ws: xyz, items: itemLocType[] } => {
-    const wsbase = 6
-    const b = new Builder({ x: wsbase, y: wsbase, z: wsbase }, 3)
+    const wsbase = 10
+    const b = new Builder({ x: wsbase, y: wsbase, z: wsbase }, 5)
     b.build()
     return {
         walls: b.walls, ws: b.size, items: b.items()
@@ -353,9 +375,14 @@ export class World {
         const w0 = this.cellAt(this.pos)
         const w1 = this.cellAt(dest)
         const wallExists = (() => {
+            const coli = false
+            if (coli) {
                 const w = [w1, w0][this.iFore & 1]
                 const b = 1 << ((this.iFore & 6) / 2)
                 return 0 != (w & b);
+            } else {
+                return false
+            }
         })()
         if (wallExists) { return false }
         this.pos = dest
