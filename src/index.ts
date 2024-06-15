@@ -13,11 +13,17 @@ const xyzToVec3 = (i: W.xyz): THREE.Vector3 => {
   return new THREE.Vector3(i.x, i.y, i.z)
 }
 
-const drawF = (ctx: CanvasRenderingContext2D, f: number, x0: number, y0: number, r0: number, th0: number, dth: number) => {
+const rotataCtx = (ctx: CanvasRenderingContext2D, th: number, x: number, y: number) => {
+  ctx.translate(x, y);
+  ctx.rotate(th)
+  ctx.translate(-x, -y)
+}
+
+const drawF = (
+  f: number, x0: number, y0: number, r0: number, th0: number,
+  drawer: (x: number, y: number, r: number, th: number) => void) => {
   if (f == 1) {
-    ctx.beginPath()
-    ctx.ellipse(x0, y0, r0, r0, 0, 0, Math.PI * 2)
-    ctx.fill()
+    drawer(x0, y0, r0, th0)
   } else {
     const cands = [...[...range(1, f - 1)].map(x => f - x), f]
     for (const i of cands) {
@@ -27,10 +33,10 @@ const drawF = (ctx: CanvasRenderingContext2D, f: number, x0: number, y0: number,
       const as = Math.asin(Math.PI / i)
       const r = i <= 3 ? r0 / (1.5 + i / 4) : r0 * as / (1 + as) * 0.9
       for (const t of range(0, i)) {
-        const th = (t + dth) * Math.PI * 2 / i
+        const th = (t + 0.5 / i) / i * Math.PI * 2
         const x = x0 + (r0 - r) * Math.cos(th + th0)
         const y = y0 + (r0 - r) * Math.sin(th + th0)
-        drawF(ctx, f / i, x, y, r, th + th0, dth)
+        drawF(f / i, x, y, r, th + Math.PI / 2 + th0, drawer)
       }
       return
     }
@@ -75,29 +81,49 @@ const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: numb
   const g = 10
   ctx.fillRect(g, g, cw - g * 2, cw - g * 2)
   {
-    for (const i of range(0, ax + 1)) {
-      ctx.save()
-      ctx.translate(cw / 2, cw / 2)
-      const rot = ax == 0 ? 0 : [-1, 1, 0][i]
-      ctx.rotate(rot * Math.PI / 8)
-      ctx.translate(-cw / 2, -cw / 2)
-      const N = 7
-      ctx.fillStyle = col(20, 0, 0)
-      const ww = cw * 1.4
-      for (const ix of range(0, N)) {
-        const x = ww * (ix * 2 + 1) / (N * 2)
-        const w = ww / (N * 2) * (1 - ax / 4)
-        ctx.fillRect(x, (cw - ww) / 2, w, ww)
-      }
-      ctx.restore()
-    }
+
   }
   const markCol = ctx.createLinearGradient(0, cw, cw, 0);
   const dcol = 90
   markCol.addColorStop(0, col(10, 100, ax * 120 + 180 + dcol))
   markCol.addColorStop(1, col(10, 20, ax * 120 + 180 - dcol))
   ctx.fillStyle = markCol
-  drawF(ctx, f + 1, cw / 2, cw / 2, cw * 0.4, 0, 1 / (ax + 1))
+  ctx.strokeStyle = markCol
+  drawF(f + 1, cw / 2, cw / 2, cw * 0.4, Math.PI * 0, (x: number, y: number, r: number, th: number) => {
+    switch (ax) {
+      case 0:
+        {
+          ctx.beginPath()
+          const r0 = r * 0.5
+          ctx.ellipse(x, y, r, r0, th, 0, Math.PI * 2)
+          ctx.fill()
+        }
+        break
+      case 1:
+        {
+          ctx.beginPath()
+          const d0 = Math.PI / 5
+          const d1 = Math.PI * 2 - d0
+          const r0 = r * 0.8
+          ctx.ellipse(x, y, r0, r0, th, d0, d1)
+          ctx.ellipse(x, y, r, r, th, d1, d0, true)
+          ctx.fill()
+        }
+        break
+      case 2:
+        {
+          ctx.save()
+          rotataCtx(ctx, th, x, y)
+          ctx.beginPath()
+          ctx.lineWidth = r / 10
+          const [rx, ry] = [r * 0.8, r * 0.5]
+          ctx.roundRect(x - rx, y - ry, rx * 2, ry * 2, r / 5)
+          ctx.stroke()
+          ctx.restore()
+        }
+        break
+    }
+  })
   ctx.strokeStyle = "black"
   ctx.lineWidth = g * 2
   ctx.strokeRect(0, 0, cw, cw)
