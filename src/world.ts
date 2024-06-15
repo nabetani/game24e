@@ -12,6 +12,7 @@ export const emptyZ: wall = 0x40
 
 export type xyz = { x: number, y: number, z: number }
 
+const numSign = (x: number): number => { return x < 0 ? -1 : (0 < x ? 1 : 0) }
 
 export type CamPoseType = {
     readonly pos: xyz,
@@ -25,6 +26,18 @@ const posToIx = (pos: xyz, s: xyz): number | null => {
     if (pos.z < 0 && s.z <= pos.z) { return null }
     return pos.x + s.x * (pos.y + s.y * pos.z)
 }
+
+const ixToPos = (ix: number, s: xyz): xyz | null => {
+    if (ix < 0) { return null }
+    if ((ix | 0) != ix) { return null }
+    const x = ix % s.x
+    const ixY = (ix - x) / s.x
+    const y = ixY % s.y
+    const z = (ixY - y) / s.y
+    if (s.z <= z) { return null }
+    return { x: x, y: y, z: z }
+}
+
 const mulScalarXyz = (a: number, b: xyz): xyz => {
     return {
         x: a * b.x,
@@ -32,6 +45,11 @@ const mulScalarXyz = (a: number, b: xyz): xyz => {
         z: a * b.z,
     }
 }
+
+const isSameXyz = (a: xyz, b: xyz): boolean => {
+    return a.x === b.x && a.y === b.y && a.z === b.z
+}
+
 const lessThanXyz = (a: xyz, b: xyz): boolean => {
     return a.x < b.x && a.y < b.y && a.z < b.z
 }
@@ -65,11 +83,20 @@ const progress = (p: xyz, d: number): xyz => {
 class Builder {
     size: xyz
     walls: wall[]
+    reachables: Set<number>
     rng: Rng
+
     constructor(size: xyz, seed: number) {
         this.size = size
         this.walls = [...range(0, size.x * size.y * size.z)].map(() => (0 as wall))
         this.rng = new Rng(seed)
+        this.reachables = new Set<number>()
+    }
+    posToIx(pos: xyz): number | null {
+        return posToIx(pos, this.size)
+    }
+    ixToPos(ix: number): xyz | null {
+        return ixToPos(ix, this.size)
     }
     eachPos(rs: xyz, proc: (d: xyz) => void) {
         for (const x of range(0, rs.x)) {
@@ -91,8 +118,12 @@ class Builder {
         }
     }
     makeRoom(pos: xyz, rs: xyz) {
+        this.eachPos(rs, (d: xyz) => {
+            const ix = this.posToIx(addXyz(pos, d))!
+            this.reachables.add(ix)
+        })
         this.eachPos(addXyz(rs, { x: 1, y: 1, z: 1 }), (d: xyz) => {
-            const ix = posToIx(addXyz(pos, d), this.size)!
+            const ix = this.posToIx(addXyz(pos, d))!
             this.setWallByIx(ix, wallX,
                 (d.x == 0 || d.x == rs.x) && d.y != rs.y && d.z != rs.z,
                 (0 < d.x && d.x < rs.x) && lessThanXyz(d, rs))
@@ -104,9 +135,48 @@ class Builder {
                 (0 < d.z && d.z < rs.z) && lessThanXyz(d, rs))
         })
     }
+    makeCuboid(p: xyz, d: xyz) {
+        const q = addXyz(p, d)
+        const p0 = {
+            x: Math.min(p.x, q.x),
+            y: Math.min(p.y, q.y),
+            z: Math.min(p.z, q.z),
+        }
+        const s = {
+            x: Math.max(p.x, q.x) - p0.x + 1,
+            y: Math.max(p.y, q.y) - p0.y + 1,
+            z: Math.max(p.z, q.z) - p0.z + 1,
+        }
+        console.log({ n: "makeCuboid", p: p, d: d, p0: p0, s: s })
+        this.makeRoom(p0, s)
+    }
+    makePath(a: xyz, b: xyz) {
+        var count = 0
+        for (var p = a; !isSameXyz(p, b) && count < 1000; count++) {
+            const dx = Math.abs(b.x - p.x + this.rng.plusMinusF(0.1))
+            const dy = Math.abs(b.y - p.y + this.rng.plusMinusF(0.1))
+            const dz = Math.abs(b.z - p.z + this.rng.plusMinusF(0.1))
+            const dmax = Math.max(dx, dy, dz)
+            const dp = (() => {
+                if (dmax === dx) {
+                    return { x: numSign(b.x - p.x), y: 0, z: 0 }
+                } else if (dmax == dy) {
+                    return { x: 0, y: numSign(b.y - p.y), z: 0 }
+                } else {
+                    return { x: 0, y: 0, z: numSign(b.z - p.z) }
+                }
+            })()
+            console.log({ b: b, p: p, dp: dp, d: [dx, dy, dz, dmax] })
+            this.makeCuboid(p, dp)
+            p = addXyz(p, dp)
+        }
+    }
     build() {
-        this.makeRoom({ x: 0, y: 0, z: 0 }, { x: 4, y: 5, z: 6 })
-        this.makeRoom({ x: 3, y: 3, z: 3 }, { x: 4, y: 5, z: 6 })
+        this.makeRoom({ x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
+        this.makePath({ x: 0, y: 0, z: 0 }, { x: 4, y: 6, z: 8 })
+        this.reachables.forEach(e => {
+            console.log(this.ixToPos(e))
+        })
     }
 }
 
@@ -157,14 +227,14 @@ export class World {
     move(): boolean {
         const d = dirToXyz(this.iFore)
         const dest = addXyz(this.pos, d)
-        const w0 = this.cellAt(this.pos)
-        const w1 = this.cellAt(dest)
-        const wallExists = (() => {
-            const w = [w1, w0][this.iFore & 1]
-            const b = 1 << ((this.iFore & 6) / 2)
-            return 0 != (w & b);
-        })()
-        if (wallExists) { return false }
+        // const w0 = this.cellAt(this.pos)
+        // const w1 = this.cellAt(dest)
+        // const wallExists = (() => {
+        //     const w = [w1, w0][this.iFore & 1]
+        //     const b = 1 << ((this.iFore & 6) / 2)
+        //     return 0 != (w & b);
+        // })()
+        // if (wallExists) { return false }
         this.pos = dest
         return true
     }
