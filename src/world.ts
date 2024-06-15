@@ -12,6 +12,8 @@ export const emptyZ: wall = 0x40
 
 export type xyz = { x: number, y: number, z: number }
 
+export type itemLocType = { id: number, p: xyz }
+
 const numSign = (x: number): number => { return x < 0 ? -1 : (0 < x ? 1 : 0) }
 
 export type CamPoseType = {
@@ -164,8 +166,8 @@ class Builder {
         this.makeRoom(p0, s)
     }
     makePath(a: xyz, b: xyz) {
-        var count = 0
-        for (var p = a; !isSameXyz(p, b) && count < 1000; count++) {
+        let count = 0
+        for (let p = a; !isSameXyz(p, b) && count < 1000; count++) {
             const dx = Math.abs(b.x - p.x + this.rng.plusMinusF(0.1))
             const dy = Math.abs(b.y - p.y + this.rng.plusMinusF(0.1))
             const dz = Math.abs(b.z - p.z + this.rng.plusMinusF(0.1))
@@ -211,7 +213,7 @@ class Builder {
     }
     dig() {
         console.log("dig")
-        var p0 = this.randomReachable()
+        let p0 = this.randomReachable()
         for (const _ of range(0, 4)) {
             if (p0 == null) {
                 return
@@ -239,21 +241,76 @@ class Builder {
             console.log(this.ixToPos(e))
         })
     }
+    canMove(p: xyz, d: xyz): boolean {
+        const w0 = this.walls[this.posToIx(p)!]
+        if (d.x < 0) { return 0 != (w0 & wallX) }
+        if (d.y < 0) { return 0 != (w0 & wallY) }
+        if (d.z < 0) { return 0 != (w0 & wallZ) }
+        const ix1 = this.posToIx(addXyz(p, d))
+        if (ix1 === null) { return false }
+        const w1 = this.walls[ix1]
+        if (0 < d.x) { return 0 != (w1 & wallX) }
+        if (0 < d.y) { return 0 != (w1 & wallY) }
+        if (0 < d.z) { return 0 != (w1 & wallZ) }
+        // unreachable
+        throw "logic error"
+    }
+    farthest(s: xyz[]): xyz {
+        let q = [...s]
+        let qs = new Set<number>()
+        for (const e of q) {
+            qs.add(this.posToIx(e)!)
+        }
+        let r = { x: -1, y: -1, z: -1 }
+        for (; ;) {
+            const dirs = this.rng.shuffle(neiboursXyz().values())
+            const p = q.shift() ?? "null"
+            if (p == "null") {
+                console.log("empty!")
+                return r
+            }
+            for (const d of dirs) {
+                if (!this.canMove(p, d)) {
+                    continue
+                }
+                const p1 = addXyz(p, d)
+                const ix = this.posToIx(p1)
+                if (ix === null || qs.has(ix)) {
+                    continue
+                }
+                r = p1
+                q.push(p1)
+                qs.add(ix)
+            }
+        }
+    }
+    items(): itemLocType[] {
+        let r: itemLocType[] = []
+        let s = [{ x: 0, y: 0, z: 0 }]
+        for (const i of range(0, 3)) {
+            const p = this.farthest(s)
+            r.push({ id: i, p: p })
+            s.push(p)
+        }
+        return r
+    }
 }
 
-const build = (seed: number): { walls: wall[], ws: xyz } => {
-    const wsbase = 10
-    const b = new Builder({ x: wsbase, y: wsbase, z: wsbase }, 1)
+const build = (seed: number): { walls: wall[], ws: xyz, items: itemLocType[] } => {
+    const wsbase = 6
+    const b = new Builder({ x: wsbase, y: wsbase, z: wsbase }, 3)
     b.build()
-    return { walls: b.walls, ws: b.size }
+    return {
+        walls: b.walls, ws: b.size, items: b.items()
+    }
 }
-
 export class World {
     walls: wall[]
     worldSize: xyz
     pos: xyz = { x: 0, y: 0, z: 0 }
     iFore: number = 0
     iTop: number = 2
+    items: itemLocType[] = []
     get fore(): xyz {
         return dirToXyz(this.iFore)
     }
@@ -299,9 +356,10 @@ export class World {
         return true
     }
     constructor(seed: number) {
-        const { walls, ws } = build(seed)
+        const { walls, ws, items } = build(seed)
         this.walls = walls
         this.worldSize = ws
+        this.items = items
     }
     posToIx(pos: xyz): number | null {
         return posToIx(pos, this.size)
