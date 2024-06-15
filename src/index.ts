@@ -293,26 +293,30 @@ class Main {
       }
     })
   }
-  setStartObj() {
-    const pos = this.world.pos
-    const ma = new THREE.MeshStandardMaterial({
-      color: 0x002844
-    })
-    const size = 1 / 20
-    const ge = new THREE.TorusGeometry(size, size / 3, 8, 7)
-    const me = new THREE.Mesh(ge, ma)
-    me.castShadow = me.receiveShadow = true
-    this.animates.push(() => {
-      const t = this.clock.getElapsedTime() * 2
-      const ta = t / 3
-      const tb = t / 17 + 1.5
-      const si = Math.sin(tb)
-      const co = Math.cos(tb)
-      const v0 = new THREE.Vector3(si * Math.sin(ta), si * Math.cos(ta), co)
-      me.setRotationFromAxisAngle(v0, Math.sin(t / 7) * 10)
-    })
-    me.position.set(pos.x, pos.y, pos.z)
-    this.scene.add(me)
+  placeObjects() {
+    const items = [...this.world.items]
+    items.push({ id: -1, p: this.world.pos })
+    for (const item of items) {
+      const ma = new THREE.MeshStandardMaterial({
+        color: 0x002844
+      })
+      const size = 1 / 20
+      const ge = new THREE.TorusGeometry(size, size / 3, 8, 7)
+      const me = new THREE.Mesh(ge, ma)
+      me.castShadow = me.receiveShadow = true
+      this.animates.push(() => {
+        const t = this.clock.getElapsedTime() * 2
+        const ta = t / 3
+        const tb = t / 17 + 1.5
+        const si = Math.sin(tb)
+        const co = Math.cos(tb)
+        const v0 = new THREE.Vector3(si * Math.sin(ta), si * Math.cos(ta), co)
+        me.setRotationFromAxisAngle(v0, Math.sin(t / 7) * 10)
+      })
+
+      me.position.set(item.p.x, item.p.y, item.p.z)
+      this.scene.add(me)
+    }
   }
 
   initMap() {
@@ -320,7 +324,7 @@ class Main {
     const Mate = THREE.MeshLambertMaterial
     const size = this.world.size
     const th = 0.05
-    this.setStartObj()
+    this.placeObjects()
     let poco = 0
     let geoms: Map<number, THREE.BoxGeometry[]> = new Map<number, THREE.BoxGeometry[]>()
     for (const ax of [0, 1, 2]) {

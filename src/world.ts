@@ -231,6 +231,7 @@ class Builder {
     }
     build() {
         this.makeRoom({ x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
+        // this.makeRoom({ x: 0, y: 0, z: 0 }, { x: 2, y: 2, z: 2 })
         for (const _ of range(0, 1)) {
             this.makeRing()
         }
@@ -243,15 +244,17 @@ class Builder {
     }
     canMove(p: xyz, d: xyz): boolean {
         const w0 = this.walls[this.posToIx(p)!]
-        if (d.x < 0) { return 0 != (w0 & wallX) }
-        if (d.y < 0) { return 0 != (w0 & wallY) }
-        if (d.z < 0) { return 0 != (w0 & wallZ) }
-        const ix1 = this.posToIx(addXyz(p, d))
-        if (ix1 === null) { return false }
+        if (d.x < 0) { return 0 === (w0 & wallX) }
+        if (d.y < 0) { return 0 === (w0 & wallY) }
+        if (d.z < 0) { return 0 === (w0 & wallZ) }
+        const p1 = addXyz(p, d)
+        if (!this.canGoTo(p1)) { return false }
+        const ix1 = this.posToIx(p1) ?? "null"
+        if (ix1 == "null") { return false }
         const w1 = this.walls[ix1]
-        if (0 < d.x) { return 0 != (w1 & wallX) }
-        if (0 < d.y) { return 0 != (w1 & wallY) }
-        if (0 < d.z) { return 0 != (w1 & wallZ) }
+        if (0 < d.x) { return 0 === (w1 & wallX) }
+        if (0 < d.y) { return 0 === (w1 & wallY) }
+        if (0 < d.z) { return 0 === (w1 & wallZ) }
         // unreachable
         throw "logic error"
     }
@@ -266,11 +269,13 @@ class Builder {
             const dirs = this.rng.shuffle(neiboursXyz().values())
             const p = q.shift() ?? "null"
             if (p == "null") {
-                console.log("empty!")
+                console.log({ r: r })
                 return r
             }
             for (const d of dirs) {
                 if (!this.canMove(p, d)) {
+                    console.log("can not move")
+                    console.log({ p: p, d: d })
                     continue
                 }
                 const p1 = addXyz(p, d)
@@ -278,6 +283,7 @@ class Builder {
                 if (ix === null || qs.has(ix)) {
                     continue
                 }
+                console.log({ p1: p1, qss: qs.size, qs: [...qs.keys()].map((e: number) => this.ixToPos(e)) })
                 r = p1
                 q.push(p1)
                 qs.add(ix)
@@ -347,9 +353,9 @@ export class World {
         const w0 = this.cellAt(this.pos)
         const w1 = this.cellAt(dest)
         const wallExists = (() => {
-            const w = [w1, w0][this.iFore & 1]
-            const b = 1 << ((this.iFore & 6) / 2)
-            return 0 != (w & b);
+                const w = [w1, w0][this.iFore & 1]
+                const b = 1 << ((this.iFore & 6) / 2)
+                return 0 != (w & b);
         })()
         if (wallExists) { return false }
         this.pos = dest
