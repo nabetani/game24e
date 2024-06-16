@@ -151,6 +151,7 @@ class Main {
   touchMove: { x: number, y: number } | null = null
   flickTh = 40
   clock = new THREE.Clock(true)
+  items: Map<number, () => void> = new Map<number, () => void>()
   adaptToWindowSize() {
     const w = window.innerWidth
     const h = window.innerHeight
@@ -175,13 +176,19 @@ class Main {
     this.initLight();
     this.clock.start()
     this.stats.showPanel(0);
+    this.world.onItem = (i: W.itemLocType) => { this.onItem(i) }
     document.getElementById("stats")!.appendChild(this.stats.dom);
   }
-  addPointlight(pos: W.xyz, col: number, intensity: number) {
+  onItem(i: W.itemLocType) {
+    const proc = this.items.get(i.id)
+    if (proc != null) { proc() }
+  }
+  addPointlight(pos: W.xyz, col: number, intensity: number): THREE.PointLight {
     const pol = new THREE.PointLight(col, intensity, 0)
     pol.position.copy(pos)
     pol.castShadow = true
     this.scene.add(pol)
+    return pol
   }
 
   initLight() {
@@ -276,34 +283,114 @@ class Main {
       }
     })
   }
-  placeObjects() {
-    const items = [...this.world.items]
-    items.forEach((i) => {
-      this.addPointlight(i.p, 0xffffaa, 1)
-    })
+  addStartObj(item: W.itemLocType) {
     const lp = 0.1
     this.addPointlight({ x: -lp, y: -lp, z: -lp }, 0xffffff, 2)
+    const ma = new THREE.MeshStandardMaterial({
+      color: 0x002844
+    })
+    const size = 1 / 20
+    const ge = new THREE.TorusGeometry(size, size / 3, 8, 7)
+    const me = new THREE.Mesh(ge, ma)
+    me.castShadow = me.receiveShadow = true
+    this.animates.push(() => {
+      const t = this.clock.getElapsedTime() * 2
+      const ta = t / 3
+      const tb = t / 17 + 1.5
+      const si = Math.sin(tb)
+      const co = Math.cos(tb)
+      const v0 = new THREE.Vector3(si * Math.sin(ta), si * Math.cos(ta), co)
+      me.setRotationFromAxisAngle(v0, Math.sin(t / 7) * 10)
+    })
+
+    me.position.set(item.p.x, item.p.y, item.p.z)
+    this.scene.add(me)
+  }
+  addItemLights(item: W.itemLocType, col: number): THREE.PointLight[] {
+    const r: THREE.PointLight[] = []
+    const add = (x: number, y: number, z: number) => {
+      const w = 0.15
+      const p = {
+        x: item.p.x + x * w,
+        y: item.p.y + y * w,
+        z: item.p.z + z * w,
+      }
+      r.push(this.addPointlight(p, col, 1 / 3))
+    }
+    add(1, 1, 1)
+    add(-1, -1, 1)
+    add(1, -1, -1)
+    add(-1, 1, -1)
+    return r
+  }
+
+  addGoalObj(item: W.itemLocType) {
+    const lights = this.addItemLights(item, 0xffff88)
+    const ma = new THREE.MeshStandardMaterial({
+      color: 0x002844
+    })
+    const scale = 0.7
+    const ra = 0.05 * scale
+    const le = 0.22 * scale
+    const wi = 0.18 * scale
+    const ge = BufferGeometryUtils.mergeGeometries([
+      new THREE.CapsuleGeometry(ra, le, 10).translate(wi / 2, 0, 0),
+      new THREE.CapsuleGeometry(ra, le, 10).translate(-wi / 2, 0, 0),
+      new THREE.CapsuleGeometry(ra, wi, 10).translate(-le / 2, 0, 0).rotateZ(Math.PI / 2)
+    ], true);
+    const me = new THREE.Mesh(ge, ma)
+    me.castShadow = me.receiveShadow = true
+    this.animates.push(() => {
+      const t = this.clock.getElapsedTime() * 0.1
+      const [tx, ty, tz] = [t * 2 ** 1, t * 2 ** 1.333, t * 2 * 1.666].map((e) => Math.sin(e) * Math.PI)
+      me.setRotationFromEuler(new THREE.Euler(tx, ty, tz))
+    })
+    me.position.set(item.p.x, item.p.y, item.p.z)
+    this.scene.add(me)
+
+  }
+
+  addItemObj(item: W.itemLocType) {
+    const lights = this.addItemLights(item, 0x8888ff)
+    const ma = new THREE.MeshStandardMaterial({
+      color: 0xffee88
+    })
+    const ra = 0.2
+    const ge = BufferGeometryUtils.mergeGeometries([
+      new THREE.TetrahedronGeometry(ra),
+      new THREE.TetrahedronGeometry(ra).rotateX(Math.PI / 2),
+    ], true);
+    const me = new THREE.Mesh(ge, ma)
+    me.castShadow = me.receiveShadow = true
+    this.animates.push(() => {
+      const t = this.clock.getElapsedTime() * 0.1
+      const [tx, ty, tz] = [t * 2 ** 1, t * 2 ** 1.333, t * 2 * 1.666].map((e) => Math.sin(e) * Math.PI)
+      me.setRotationFromEuler(new THREE.Euler(tx, ty, tz))
+    })
+
+    me.position.set(item.p.x, item.p.y, item.p.z)
+    this.scene.add(me)
+    this.items.set(item.id, () => {
+      this.scene.remove(me)
+      lights.forEach((e) => this.scene.remove(e))
+    })
+  }
+
+  placeObjects() {
+    const items = [...this.world.items]
     items.push({ id: -1, p: this.world.pos })
     for (const item of items) {
-      const ma = new THREE.MeshStandardMaterial({
-        color: 0x002844
-      })
-      const size = 1 / 20
-      const ge = new THREE.TorusGeometry(size, size / 3, 8, 7)
-      const me = new THREE.Mesh(ge, ma)
-      me.castShadow = me.receiveShadow = true
-      this.animates.push(() => {
-        const t = this.clock.getElapsedTime() * 2
-        const ta = t / 3
-        const tb = t / 17 + 1.5
-        const si = Math.sin(tb)
-        const co = Math.cos(tb)
-        const v0 = new THREE.Vector3(si * Math.sin(ta), si * Math.cos(ta), co)
-        me.setRotationFromAxisAngle(v0, Math.sin(t / 7) * 10)
-      })
-
-      me.position.set(item.p.x, item.p.y, item.p.z)
-      this.scene.add(me)
+      switch (item.id) {
+        case -1:
+          this.addStartObj(item)
+          break
+        case 2:
+          this.addGoalObj(item)
+          break
+        default:
+          this.addItemObj(item)
+          break
+      }
     }
   }
 

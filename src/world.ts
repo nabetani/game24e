@@ -1,3 +1,4 @@
+import { bool } from "three/examples/jsm/nodes/Nodes.js"
 import { range } from "./calc"
 import { Rng } from "./rng"
 
@@ -248,9 +249,14 @@ class Builder {
         this.makeRoom(c, s)
     }
     farPos(ax: number): xyz {
-        const x = (): number => this.size.x - 4 - this.rng.i(3)
-        const y = (): number => this.size.y - 4 - this.rng.i(3)
-        const z = (): number => this.size.z - 4 - this.rng.i(3)
+        const sepa = (e: number): [number, number] =>
+            [Math.round(e / 3), Math.round(e / 3) + 1]
+        const [gx, rx] = sepa(this.size.x)
+        const [gy, ry] = sepa(this.size.y)
+        const [gz, rz] = sepa(this.size.z)
+        const x = (): number => this.size.x - gx - this.rng.i(rx)
+        const y = (): number => this.size.y - gy - this.rng.i(ry)
+        const z = (): number => this.size.z - gz - this.rng.i(rz)
         switch (ax) {
             case 0: return { x: this.size.x - 2, y: y(), z: z() }
             case 1: return { x: x(), y: this.size.y - 2, z: z() }
@@ -284,8 +290,8 @@ class Builder {
         if (d.z < 0) { return 0 === (w0 & wallZ) }
         const p1 = addXyz(p, d)
         if (!this.canGoTo(p1)) { return false }
-        const ix1 = this.posToIx(p1) ?? "null"
-        if (ix1 == "null") { return false }
+        const ix1 = this.posToIx(p1)
+        if (ix1 == null) { return false }
         const w1 = this.walls[ix1]
         if (0 < d.x) { return 0 === (w1 & wallX) }
         if (0 < d.y) { return 0 === (w1 & wallY) }
@@ -302,8 +308,8 @@ class Builder {
         let r = { x: -1, y: -1, z: -1 }
         for (; ;) {
             const dirs = this.rng.shuffle(neiboursXyz().values())
-            const p = q.shift() ?? "null"
-            if (p == "null") {
+            const p = q.shift()
+            if (p == null) {
                 console.log({ r: r })
                 return r
             }
@@ -338,7 +344,7 @@ class Builder {
 }
 
 const build = (seed: number): { walls: wall[], ws: xyz, items: itemLocType[] } => {
-    const wsbase = 10
+    const wsbase = 5
     const b = new Builder({ x: wsbase, y: wsbase, z: wsbase }, 5)
     b.build()
     return {
@@ -352,6 +358,7 @@ export class World {
     iFore: number = 0
     iTop: number = 2
     items: itemLocType[] = []
+    onItem: (i: itemLocType) => void = (i: itemLocType) => { }
     get fore(): xyz {
         return dirToXyz(this.iFore)
     }
@@ -399,6 +406,8 @@ export class World {
         })()
         if (wallExists) { return false }
         this.pos = dest
+        const i = this.items.find((i) => isSameXyz(i.p, this.pos))
+        if (i != null) { this.onItem(i) }
         return true
     }
     constructor(seed: number) {
