@@ -311,14 +311,7 @@ class Main {
     ], true);
     const me = new THREE.Mesh(ge, ma)
     me.castShadow = me.receiveShadow = true
-    this.animates.push(() => {
-      const t = this.clock.getElapsedTime() * 0.1
-      const [tx, ty, tz] = [t * 2 ** 1, t * 2 ** 1.333, t * 2 * 1.666].map((e) => Math.sin(e) * Math.PI)
-      me.setRotationFromEuler(new THREE.Euler(tx, ty, tz))
-    })
-    me.position.set(item.p.x, item.p.y, item.p.z)
-    this.scene.add(me)
-
+    this.addStdObj(item, me)
   }
 
   itemMaterial(): THREE.Material {
@@ -334,16 +327,7 @@ class Main {
     return ma
   }
 
-  addItemObj(item: W.itemLocType) {
-    const ma = this.itemMaterial()
-    const ra = 0.2
-    const ge = BufferGeometryUtils.mergeGeometries([
-      // new THREE.DodecahedronGeometry(ra,3),
-      new THREE.TetrahedronGeometry(ra),
-      new THREE.TetrahedronGeometry(ra).rotateX(Math.PI / 2),
-    ], true);
-    const me = new THREE.Mesh(ge, ma)
-    me.castShadow = me.receiveShadow = true
+  addStdObj(item: W.itemLocType, me: THREE.Mesh) {
     let got: null | number = null
     this.animates.push(() => {
       const [s, t] = ((): [number | null, number] => {
@@ -368,6 +352,19 @@ class Main {
     this.items.set(item.id, () => {
       got = this.clock.getElapsedTime()
     })
+  }
+
+  addItemObj(item: W.itemLocType) {
+    const ma = this.itemMaterial()
+    const ra = 0.2
+    const ge = BufferGeometryUtils.mergeGeometries([
+      // new THREE.DodecahedronGeometry(ra,3),
+      new THREE.TetrahedronGeometry(ra),
+      new THREE.TetrahedronGeometry(ra).rotateX(Math.PI / 2),
+    ], true);
+    const me = new THREE.Mesh(ge, ma)
+    me.castShadow = me.receiveShadow = true
+    this.addStdObj(item, me)
   }
 
   placeObjects() {
