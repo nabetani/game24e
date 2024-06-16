@@ -349,7 +349,7 @@ export class World {
     iFore: number = 0
     iTop: number = 2
     items: itemLocType[] = []
-    onItem: (i: itemLocType) => void = (i: itemLocType) => { }
+    onItem: (i: itemLocType) => void = () => { }
     get fore(): xyz {
         return dirToXyz(this.iFore)
     }
