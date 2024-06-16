@@ -185,7 +185,7 @@ class Main {
   }
 
   initLight() {
-    this.scene.add(new THREE.AmbientLight(0x88ffff, 0.7))
+    this.scene.add(new THREE.AmbientLight(0x88ffff, 0.8))
   }
   walk(proc: () => boolean) {
     if (1 < this.queue.length) {
@@ -298,29 +298,9 @@ class Main {
     me.position.set(item.p.x, item.p.y, item.p.z)
     this.scene.add(me)
   }
-  addItemLights(item: W.itemLocType, col: number): THREE.PointLight[] {
-    const r: THREE.PointLight[] = []
-    const add = (x: number, y: number, z: number) => {
-      const w = 0.15
-      const p = {
-        x: item.p.x + x * w,
-        y: item.p.y + y * w,
-        z: item.p.z + z * w,
-      }
-      r.push(this.addPointlight(p, col, 1 / 3))
-    }
-    add(1, 1, 1)
-    add(-1, -1, 1)
-    add(1, -1, -1)
-    add(-1, 1, -1)
-    return r
-  }
 
   addGoalObj(item: W.itemLocType) {
-    const lights = this.addItemLights(item, 0xffff88)
-    const ma = new THREE.MeshStandardMaterial({
-      color: 0x002844
-    })
+    const ma = this.itemMaterial()
     const scale = 0.7
     const ra = 0.05 * scale
     const le = 0.22 * scale
@@ -342,13 +322,25 @@ class Main {
 
   }
 
-  addItemObj(item: W.itemLocType) {
-    const lights = this.addItemLights(item, 0x8888ff)
-    const ma = new THREE.MeshStandardMaterial({
-      color: 0xffee88
+  itemMaterial(): THREE.Material {
+    const envMap = this.tloader.load("assets/wall0.webp")
+    envMap.mapping = THREE.EquirectangularReflectionMapping
+    envMap.magFilter = THREE.LinearFilter
+    envMap.minFilter = THREE.LinearMipMapLinearFilter
+    const ma = new THREE.MeshPhongMaterial({
+      color: 0x0000ff,
+      envMap: envMap,
     })
+    ma.combine = THREE.MixOperation
+    return ma
+  }
+
+
+  addItemObj(item: W.itemLocType) {
+    const ma = this.itemMaterial()
     const ra = 0.2
     const ge = BufferGeometryUtils.mergeGeometries([
+      // new THREE.DodecahedronGeometry(ra,3),
       new THREE.TetrahedronGeometry(ra),
       new THREE.TetrahedronGeometry(ra).rotateX(Math.PI / 2),
     ], true);
@@ -364,7 +356,6 @@ class Main {
     this.scene.add(me)
     this.items.set(item.id, () => {
       this.scene.remove(me)
-      lights.forEach((e) => this.scene.remove(e))
     })
   }
 
@@ -389,7 +380,7 @@ class Main {
   initMap() {
     const Mate = THREE.MeshLambertMaterial
     const size = this.world.size
-    const th = 0.05
+    const th = 0.1
     this.placeObjects()
     const geoms: Map<number, THREE.BoxGeometry[]> = new Map<number, THREE.BoxGeometry[]>()
     for (const ax of [0, 1, 2]) {
