@@ -294,7 +294,6 @@ class Main {
       const v0 = new THREE.Vector3(si * Math.sin(ta), si * Math.cos(ta), co)
       me.setRotationFromAxisAngle(v0, Math.sin(t / 7) * 10)
     })
-
     me.position.set(item.p.x, item.p.y, item.p.z)
     this.scene.add(me)
   }
@@ -335,7 +334,6 @@ class Main {
     return ma
   }
 
-
   addItemObj(item: W.itemLocType) {
     const ma = this.itemMaterial()
     const ra = 0.2
@@ -346,16 +344,29 @@ class Main {
     ], true);
     const me = new THREE.Mesh(ge, ma)
     me.castShadow = me.receiveShadow = true
+    let got: null | number = null
     this.animates.push(() => {
-      const t = this.clock.getElapsedTime() * 0.1
+      const [s, t] = ((): [number | null, number] => {
+        const tick = this.clock.getElapsedTime()
+        if (got == null) {
+          const t = tick * 0.1
+          return [null, t]
+        } else {
+          const dt = tick - got
+          return [Math.max(0, 1 - dt) ** 0.7, tick * 0.1 + dt ** 3]
+        }
+      })()
       const [tx, ty, tz] = [t * 2 ** 1, t * 2 ** 1.333, t * 2 * 1.666].map((e) => Math.sin(e) * Math.PI)
       me.setRotationFromEuler(new THREE.Euler(tx, ty, tz))
+      if (s != null) {
+        me.scale.set(s, s, s)
+      }
     })
 
     me.position.set(item.p.x, item.p.y, item.p.z)
     this.scene.add(me)
     this.items.set(item.id, () => {
-      this.scene.remove(me)
+      got = this.clock.getElapsedTime()
     })
   }
 
