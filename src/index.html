@@ -7,13 +7,18 @@
   <!-- <link rel="icon" href="assets/icon.ico" /> -->
   <title>game24e</title>
   <style>
+    :root {
+      --sizeUnit: 1vh;
+    }
+
     html,
     body {
-      height: 100%;
+      width: 100%;
       background-color: black;
     }
 
     * {
+      box-sizing: border-box;
       overflow: hidden;
       border: none;
       margin: 0;
@@ -23,11 +28,80 @@
     canvas {
       display: none;
     }
+
+    div#title {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+    }
+
+    img {
+      object-fit: contain;
+      max-width: 100svw;
+      max-height: 100svh;
+    }
+
+    div.start {
+      position: absolute;
+      top: calc(var(--sizeUnit) * 20);
+      width: 100svw;
+      max-width: 100svw;
+      text-align: center;
+      display: none;
+    }
+
+    button {
+      margin: var(--sizeUnit);
+      padding: var(--sizeUnit);
+      background-color: #eee;
+      border-radius: var(--sizeUnit);
+      border: solid #888 calc(var(--sizeUnit) * 0.2);
+      font-size: calc(var(--sizeUnit) * 3);
+    }
+
+    button.large {
+      font-size: calc(var(--sizeUnit) * 5);
+      padding-left: calc(var(--sizeUnit) * 2);
+      padding-right: calc(var(--sizeUnit) * 2);
+
+    }
+
+    div.bottom {
+      position: absolute;
+      text-align: center;
+      display: none;
+    }
+
+    div.bottom>button {
+      margin: calc(var(--sizeUnit) * 0.5);
+      padding: calc(var(--sizeUnit) * 0.5);
+      border-radius: calc(var(--sizeUnit) * 0.3);
+      font-size: calc(var(--sizeUnit) * 2);
+    }
   </style>
 </head>
 
-<body>
+<body id="body">
   <div id="stats"></div>
+  <div id="title">
+    <img id="title-img" src="assets/title.webp" />
+    <div class="start" id="start">
+      <button>ルール説明</button>
+      <br />
+      <button id="startGame" class="large">Start</button>
+      <br />
+      <button>手に入れたもの</button>
+    </div>
+    <div class="bottom" id="bottom">
+      <button>制作ノート</button>
+      <button>鍋谷武典@タイッツー</button>
+      <button>Souce code and Licence</button>
+      <button>Souce code and Licence</button>
+      <button>SUZURI - Nabetani-T</button>
+      <button>タイッツー #タイツダンジョン</button>
+    </div>
 </body>
 
 </html>

@@ -451,4 +451,38 @@ class Main {
   }
 }
 
-(new Main()).animate();
+const onReize = () => {
+  const titleImg = document.getElementById("title-img")!
+  const html = document.getElementsByTagName("html")[0]
+  html.style.setProperty("--sizeUnit", titleImg.clientHeight * 0.01 + "px")
+  const start = document.getElementById("start")
+  if (start != null) {
+    start.style.display = "block"
+  }
+  const bottom = document.getElementById("bottom")
+  if (bottom != null) {
+    bottom.style.display = "block"
+    bottom.style.minWidth = titleImg.clientWidth + "px"
+    bottom.style.width = titleImg.clientWidth + "px"
+    bottom.style.top = (titleImg.clientHeight * 0.97 - bottom.clientHeight) + "px"
+  }
+}
+window.onresize = () => onReize()
+
+window.onload = () => {
+  onReize()
+  const setEvent = (id: string, proc: () => void) => {
+    const o = document.getElementById(id)
+    if (o != null) {
+      o.onclick = proc
+    }
+  };
+  setEvent("startGame", () => {
+    const o = document.getElementById("title");
+    if (o != null) {
+      o.style.display = "none";
+    }
+
+    (new Main()).animate();
+  })
+}

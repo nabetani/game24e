@@ -267,9 +267,9 @@ class Builder {
         }
         rep(2, () => this.makeRing())
         this.centerRoom()
-        // rep(2, () => this.dig())
-        // rep(6, () => this.makeRing())
-        // rep(6, () => this.dig())
+        rep(2, () => this.dig())
+        rep(6, () => this.makeRing())
+        rep(6, () => this.dig())
         // this.reachables.forEach(e => {
         //     console.log(this.ixToPos(e))
         // })
