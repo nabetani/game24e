@@ -1,5 +1,4 @@
-import { bool } from "three/examples/jsm/nodes/Nodes.js"
-import { range } from "./calc"
+import { range, clamp } from "./calc"
 import { Rng } from "./rng"
 
 
@@ -71,13 +70,7 @@ const dirToXyz = (d: number): xyz => {
         z: [0, 0, 0, 0, 1, -1][d],
     }
 }
-const intDivXyz = (a: xyz, d: number): xyz => {
-    return {
-        x: Math.floor(a.x / d),
-        y: Math.floor(a.y / d),
-        z: Math.floor(a.z / d)
-    }
-}
+
 const neiboursXyz = (): xyz[] => {
     return [
         { x: -1, y: 0, z: 0 },
@@ -91,14 +84,6 @@ const neiboursXyz = (): xyz[] => {
 
 const invDir = (d: number): number => {
     return d ^ 1;
-}
-const progress = (p: xyz, d: number): xyz => {
-    const dp = dirToXyz(d)
-    return {
-        x: p.x + dp.x,
-        y: p.y + dp.y,
-        z: p.z + dp.z,
-    }
 }
 
 class Builder {
@@ -142,6 +127,10 @@ class Builder {
         console.log({ n: "makeRoom", p0: pos, rs: rs, p1: addXyz(pos, rs) })
         this.eachPos(rs, (d: xyz) => {
             const ix = this.posToIx(addXyz(pos, d))!
+            const rp = this.ixToPos(ix)
+            if ((rp != null && rp.x < 0) || ix == null) {
+                console.log({ pos: pos, rs: rs, p: addXyz(pos, d), ix: ix, rp: rp })
+            }
             this.reachables.add(ix)
         })
         this.eachPos(addXyz(rs, { x: 1, y: 1, z: 1 }), (d: xyz) => {
@@ -188,14 +177,14 @@ class Builder {
                     return { x: 0, y: 0, z: numSign(b.z - p.z) }
                 }
             })()
-            console.log({ b: b, p: p, dp: dp, d: [dx, dy, dz, dmax] })
+            // console.log({ b: b, p: p, dp: dp, d: [dx, dy, dz, dmax] })
             this.makeCuboid(p, dp)
             p = addXyz(p, dp)
         }
     }
     randomReachable(): xyz {
         const ix = this.rng.sampleOfIter(this.reachables.keys())
-        console.log({ ix: ix, pos: this.ixToPos(ix) })
+        // console.log({ ix: ix, pos: this.ixToPos(ix) })
         return this.ixToPos(ix)!
     }
     makeRing() {
@@ -219,13 +208,13 @@ class Builder {
             0 <= p.z && p.z < this.size.z - 1
     }
     dig() {
-        console.log("dig")
+        // console.log("dig")
         let p0 = this.randomReachable()
         for (const _ of range(0, 4)) {
             if (p0 == null) {
                 return
             }
-            console.log({ p0: p0 })
+            // console.log({ p0: p0 })
             const d = this.rng.sampleOfIter(neiboursXyz().values())
             const p1 = addXyz(p0, d)
             const ix1 = this.posToIx(p1)
@@ -238,14 +227,16 @@ class Builder {
     }
     centerRoom() {
         const c = this.randomReachable()
+        const c0 = JSON.stringify(c)
         const s = {
             x: this.rng.i(4) + 1,
             y: this.rng.i(4) + 1,
             z: this.rng.i(4) + 1
         }
-        c.x = Math.min(this.size.x - s.x - 2, c.x)
-        c.y = Math.min(this.size.y - s.y - 2, c.y)
-        c.z = Math.min(this.size.z - s.z - 2, c.z)
+        c.x = clamp(c.x, 0, this.size.x - s.x - 2)
+        c.y = clamp(c.y, 0, this.size.y - s.y - 2)
+        c.z = clamp(c.z, 0, this.size.z - s.z - 2)
+        console.log({ n: "centerRoom", c0: c0, c: c, s: s })
         this.makeRoom(c, s)
     }
     farPos(ax: number): xyz {
@@ -276,12 +267,12 @@ class Builder {
         }
         rep(2, () => this.makeRing())
         this.centerRoom()
-        rep(2, () => this.dig())
-        rep(6, () => this.makeRing())
-        rep(6, () => this.dig())
-        this.reachables.forEach(e => {
-            console.log(this.ixToPos(e))
-        })
+        // rep(2, () => this.dig())
+        // rep(6, () => this.makeRing())
+        // rep(6, () => this.dig())
+        // this.reachables.forEach(e => {
+        //     console.log(this.ixToPos(e))
+        // })
     }
     canMove(p: xyz, d: xyz): boolean {
         const w0 = this.walls[this.posToIx(p)!]
@@ -300,8 +291,8 @@ class Builder {
         throw "logic error"
     }
     farthest(s: xyz[]): xyz {
-        let q = [...s]
-        let qs = new Set<number>()
+        const q = [...s]
+        const qs = new Set<number>()
         for (const e of q) {
             qs.add(this.posToIx(e)!)
         }
@@ -310,7 +301,7 @@ class Builder {
             const dirs = this.rng.shuffle(neiboursXyz().values())
             const p = q.shift()
             if (p == null) {
-                console.log({ r: r })
+                // console.log({ r: r })
                 return r
             }
             for (const d of dirs) {
@@ -324,7 +315,7 @@ class Builder {
                 if (ix === null || qs.has(ix)) {
                     continue
                 }
-                console.log({ p1: p1, qss: qs.size, qs: [...qs.keys()].map((e: number) => this.ixToPos(e)) })
+                // console.log({ p1: p1, qss: qs.size, qs: [...qs.keys()].map((e: number) => this.ixToPos(e)) })
                 r = p1
                 q.push(p1)
                 qs.add(ix)
@@ -332,8 +323,8 @@ class Builder {
         }
     }
     items(): itemLocType[] {
-        let r: itemLocType[] = []
-        let s = [{ x: 0, y: 0, z: 0 }]
+        const r: itemLocType[] = []
+        const s = [{ x: 0, y: 0, z: 0 }]
         for (const i of range(0, 3)) {
             const p = this.farthest(s)
             r.push({ id: i, p: p })
@@ -345,7 +336,7 @@ class Builder {
 
 const build = (seed: number): { walls: wall[], ws: xyz, items: itemLocType[] } => {
     const wsbase = 5
-    const b = new Builder({ x: wsbase, y: wsbase, z: wsbase }, 5)
+    const b = new Builder({ x: wsbase, y: wsbase, z: wsbase }, seed)
     b.build()
     return {
         walls: b.walls, ws: b.size, items: b.items()

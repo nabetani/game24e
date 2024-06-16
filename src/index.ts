@@ -9,10 +9,6 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 
 type DoSomething = { (): boolean };
 
-const xyzToVec3 = (i: W.xyz): THREE.Vector3 => {
-  return new THREE.Vector3(i.x, i.y, i.z)
-}
-
 const rotataCtx = (ctx: CanvasRenderingContext2D, th: number, x: number, y: number) => {
   ctx.translate(x, y);
   ctx.rotate(th)
@@ -80,9 +76,6 @@ const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: numb
   ctx.fillStyle = baseCol;
   const g = 10
   ctx.fillRect(g, g, cw - g * 2, cw - g * 2)
-  {
-
-  }
   const markCol = ctx.createLinearGradient(0, cw, cw, 0);
   const dcol = 90
   markCol.addColorStop(0, col(10, 100, ax * 120 + 180 + dcol))
@@ -220,7 +213,6 @@ class Main {
   }
   setInputEvents() {
     const p = window;
-    const actFrameCount = 4
     const move = () => {
       this.walk(() => this.world.move())
     };
@@ -395,13 +387,11 @@ class Main {
   }
 
   initMap() {
-    const wallT = this.tloader.load("./assets/wall0.webp")
     const Mate = THREE.MeshLambertMaterial
     const size = this.world.size
     const th = 0.05
     this.placeObjects()
-    let poco = 0
-    let geoms: Map<number, THREE.BoxGeometry[]> = new Map<number, THREE.BoxGeometry[]>()
+    const geoms: Map<number, THREE.BoxGeometry[]> = new Map<number, THREE.BoxGeometry[]>()
     for (const ax of [0, 1, 2]) {
       const g = [
         new THREE.BoxGeometry(th, 1, 1),
@@ -443,7 +433,6 @@ class Main {
       me.castShadow = true;
       this.scene.add(me)
     });
-    console.log(`poco: ${poco * 12}`);
   }
   animate() {
     this.stats.begin();

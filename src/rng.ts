@@ -58,7 +58,7 @@ export class Rng {
   }
   shuffle<T>(it: IterableIterator<T>): T[] {
     const a = [...it]
-    let r = []
+    const r = []
     while (0 < a.length) {
       const ix = this.i(a.length)
       r.push(a.splice(ix, 1)[0])
