@@ -3,8 +3,10 @@ const rotl = (x: number, k: number): number => {
   return ((x << k) | (x >>> (32 - k))) >>> 0
 }
 
+export type seedType = [number, number, number, number]
+
 export class Rng {
-  static genSeed(s: number): [number, number, number, number] {
+  static genSeed(s: number): seedType {
     const f = (x: number): number => (rotl(x * 23 + 19, 17) * 31) >>> 0 // nonsense calc
     const s0 = f(s)
     const s1 = f(s0)
@@ -14,8 +16,8 @@ export class Rng {
   }
 
   // using algorithm in https://prng.di.unimi.it/xoshiro128plusplus.c
-  s: [number, number, number, number]
-  constructor(seed0: [number, number, number, number]) {
+  s: seedType
+  constructor(seed0: seedType) {
     this.s = [...seed0]
     this.s[2] |= 1 // avoid all-zero
     for (let i = 0; i < 8; ++i) {

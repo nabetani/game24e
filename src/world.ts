@@ -95,7 +95,7 @@ class Builder {
     constructor(size: xyz, seed: number) {
         this.size = size
         this.walls = [...range(0, size.x * size.y * size.z)].map(() => (0 as wall))
-        this.rng = new Rng(seed)
+        this.rng = new Rng(Rng.genSeed(seed))
         this.reachables = new Set<number>()
     }
     posToIx(pos: xyz): number | null {
