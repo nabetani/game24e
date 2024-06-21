@@ -1,7 +1,8 @@
 import { Rng, seedType } from "./rng"
-import { range } from "./calc"
+import { range, clamp } from "./calc"
 
-export type ItemInfoType = { name: string, uname: string, rarity: 1 | 2 | 3 | 4 | 5 }
+export type RarityType = 1 | 2 | 3 | 4 | 5
+export type ItemInfoType = { name: string, uname: string, rarity: RarityType }
 const itemsInfos: ItemInfoType[] = [
     { rarity: 1, name: "ゴブリンが好きそうな、ちょっと臭い帽子", uname: "変な帽子" },
     { rarity: 1, name: "ゾンビの親指", uname: "骨みたいなもの" },
@@ -54,8 +55,8 @@ const itemsInfos: ItemInfoType[] = [
     { rarity: 5, name: "指輪の破片（ネクロマンサー好きそうな感じ）", uname: "金属片" },
     { rarity: 5, name: "コカトリスのトサカの破片（干からびている）", uname: "干からびた物体" },
     { rarity: 5, name: "ハーピーがつけていた髪飾り（真っ赤）", uname: "赤い物体" },
-    { rarity: 5, name: "昆虫系の魔獣が脱皮したときの皮", uname: "なにかの切れ端" },
-    { rarity: 5, name: "脱皮したバシリスクの皮の頭の部分", uname: "なにかの切れ端" },
+    { rarity: 5, name: "昆虫系の魔獣が脱皮したときの皮", uname: "半透明のなにかの切れ端" },
+    { rarity: 5, name: "脱皮したバシリスクの皮の頭の部分", uname: "半透明のなにかの切れ端" },
     { rarity: 5, name: "ガーゴイルの角の破片（ツルツルしている）", uname: "ツルツルした物体" },
 ]
 
@@ -70,9 +71,16 @@ export class ItemSelector {
     newRng(salt: number): Rng {
         return new Rng(this.saltSeed(salt))
     }
+    static rarity(s0: number): RarityType {
+        const raRatio = 1.7
+        const raCount = 5
+        const s = clamp(1 - s0, 0, 1) * (raRatio ** raCount - 1) + 1
+        const r = clamp(raCount - Math.floor(Math.log(s) / Math.log(raRatio)), 1, raCount)
+        return r as RarityType
+    }
     getIDs(n: number): number[] {
         const rngR = this.newRng(0)
-        const raList = [...range(0, n)].map(() => 1 + rngR.i(5))
+        const raList: number[] = []
         const ids: number[] = []
         for (const ra of raList) {
             const rng = this.newRng(ra)
