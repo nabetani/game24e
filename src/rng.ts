@@ -1,55 +1,50 @@
 
+const rotl = (x: number, k: number): number => {
+  return ((x << k) | (x >>> (32 - k))) >>> 0
+}
+
 export class Rng {
-  // from  pcg_oneseq_32_xsh_rs_16_random_r at https://github.com/imneme/pcg-c/
-  state: number
-  constructor(seed: number) {
-    this.state = (Rng.step(seed) | 0x80000000) >>> 0;
+  static genSeed(s: number): [number, number, number, number] {
+    const f = (x: number): number => (rotl(x * 23 + 19, 17) * 31) >>> 0 // nonsense calc
+    const s0 = f(s)
+    const s1 = f(s0)
+    const s2 = f(s1)
+    const s3 = f(s2)
+    return [s0, s1, s2, s3]
+  }
+
+  // using algorithm in https://prng.di.unimi.it/xoshiro128plusplus.c
+  s: [number, number, number, number]
+  constructor(seed0: [number, number, number, number]) {
+    this.s = [...seed0]
+    this.s[2] |= 1 // avoid all-zero
     for (let i = 0; i < 8; ++i) {
-      this.state = Rng.step(this.state);
+      this.next()
     }
   }
-  static output(n: number): number {
-    // inline uint16_t pcg_output_xsh_rs_32_16(uint32_t state)
-    // {
-    //     return (uint16_t)(((state >> 11u) ^ state) >> ((state >> 30u) + 11u));
-    // }
-    return ((((n >> 11) ^ n) >>> 0) >> ((n >> 30) + 11)) & 0xffff;
-  }
-  next16(): number {
-    // inline uint16_t pcg_oneseq_32_xsh_rs_16_random_r(struct pcg_state_32* rng)
-    // {
-    //     uint32_t oldstate = rng->state;
-    //     pcg_oneseq_32_step_r(rng);
-    //     return pcg_output_xsh_rs_32_16(oldstate);
-    // }
-    const old = this.state;
-    this.state = Rng.step(old);
-    return Rng.output(old);
-  }
   next(): number {
-    return ((this.next16() << 16) >>> 0) + this.next16();
+    const result = rotl(this.s[0] + this.s[3], 7) + this.s[0];
+    const t = this.s[1] << 9;
+    this.s[2] ^= this.s[0];
+    this.s[3] ^= this.s[1];
+    this.s[1] ^= this.s[2];
+    this.s[0] ^= this.s[3];
+    this.s[2] ^= t;
+    this.s[3] = rotl(this.s[3], 11);
+    return result >>> 0;
   }
   i(sup: number): number {
     return this.next() % sup
   }
-  static step(n: number): number {
-    // #define PCG_DEFAULT_MULTIPLIER_32  747796405U
-    // #define PCG_DEFAULT_INCREMENT_32   2891336453U
-    // inline void pcg_oneseq_32_step_r(struct pcg_state_32* rng)
-    // {
-    //     rng->state = rng->state * PCG_DEFAULT_MULTIPLIER_32
-    //                  + PCG_DEFAULT_INCREMENT_32;
-    // }
-    const mul = 747796405;
-    const inc = 2891336453;
-    // rng->state = rng->state * PCG_DEFAULT_MULTIPLIER_32 + PCG_DEFAULT_INCREMENT_32;
-    return (((n * mul) >>> 0) + inc) >>> 0;
-  }
-
   plusMinusF(d: number): number {
     const n = this.next() + 1; // 1〜2**32
     const f = n / (0x100000001); // 0〜1 両端含まず
     return (f * 2 - 1) * d;
+  }
+  f(sup: number): number {
+    const n = this.next() // 0〜2**32-1
+    const f = n / (2 ** 32) // 0〜1（上端含まず）
+    return f * sup
   }
   sampleOfIter<T>(it: IterableIterator<T>): T {
     const a = [...it]
