@@ -1,4 +1,5 @@
 import { range, clamp } from "./calc"
+import { ItemSelector } from "./itemInfos"
 import { Rng } from "./rng"
 
 
@@ -91,12 +92,14 @@ class Builder {
     walls: wall[]
     reachables: Set<number>
     rng: Rng
+    itemSelector: ItemSelector
 
     constructor(size: xyz, seed: number) {
         this.size = size
         this.walls = [...range(0, size.x * size.y * size.z)].map(() => (0 as wall))
         this.rng = new Rng(Rng.genSeed(seed))
         this.reachables = new Set<number>()
+        this.itemSelector = new ItemSelector(seed * 23 + 29)
     }
     posToIx(pos: xyz): number | null {
         return posToIx(pos, this.size)
@@ -124,13 +127,9 @@ class Builder {
         }
     }
     makeRoom(pos: xyz, rs: xyz) {
-        console.log({ n: "makeRoom", p0: pos, rs: rs, p1: addXyz(pos, rs) })
+        // console.log({ n: "makeRoom", p0: pos, rs: rs, p1: addXyz(pos, rs) })
         this.eachPos(rs, (d: xyz) => {
             const ix = this.posToIx(addXyz(pos, d))!
-            const rp = this.ixToPos(ix)
-            if ((rp != null && rp.x < 0) || ix == null) {
-                console.log({ pos: pos, rs: rs, p: addXyz(pos, d), ix: ix, rp: rp })
-            }
             this.reachables.add(ix)
         })
         this.eachPos(addXyz(rs, { x: 1, y: 1, z: 1 }), (d: xyz) => {
@@ -158,7 +157,6 @@ class Builder {
             y: Math.max(p.y, q.y) - p0.y + 1,
             z: Math.max(p.z, q.z) - p0.z + 1,
         }
-        console.log({ n: "makeCuboid", p: p, d: d, p0: p0, s: s })
         this.makeRoom(p0, s)
     }
     makePath(a: xyz, b: xyz) {
@@ -236,7 +234,6 @@ class Builder {
         c.x = clamp(c.x, 0, this.size.x - s.x - 2)
         c.y = clamp(c.y, 0, this.size.y - s.y - 2)
         c.z = clamp(c.z, 0, this.size.z - s.z - 2)
-        console.log({ n: "centerRoom", c0: c0, c: c, s: s })
         this.makeRoom(c, s)
     }
     farPos(ax: number): xyz {
@@ -306,8 +303,6 @@ class Builder {
             }
             for (const d of dirs) {
                 if (!this.canMove(p, d)) {
-                    console.log("can not move")
-                    console.log({ p: p, d: d })
                     continue
                 }
                 const p1 = addXyz(p, d)
@@ -324,10 +319,11 @@ class Builder {
     }
     items(): itemLocType[] {
         const r: itemLocType[] = []
+        const ids = this.rng.shuffle([World.goalID, ...this.itemSelector.getIDs(2)])
         const s = [{ x: 0, y: 0, z: 0 }]
-        for (const i of range(0, 3)) {
+        for (const id of ids) {
             const p = this.farthest(s)
-            r.push({ id: i, p: p })
+            r.push({ id: id, p: p })
             s.push(p)
         }
         return r
@@ -348,6 +344,7 @@ export class World {
     pos: xyz = { x: 0, y: 0, z: 0 }
     iFore: number = 0
     iTop: number = 2
+    static get goalID() { return -1 }
     items: itemLocType[] = []
     onItem: (i: itemLocType) => void = () => { }
     get fore(): xyz {

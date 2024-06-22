@@ -11,7 +11,6 @@ test("ItemSelector.rarity", () => {
         const r = f(i / n)
         m.set(r, (m.get(r) ?? 0) + 1)
     }
-    console.log(m)
     for (const i of range(1, 5)) {
         const ratio = m.get(i)! / m.get(i + 1)!
         expect(ratio).toBeCloseTo(1.7)

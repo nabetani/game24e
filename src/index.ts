@@ -145,6 +145,7 @@ class Main {
   flickTh = 40
   clock = new THREE.Clock(true)
   items: Map<number, () => void> = new Map<number, () => void>()
+  seed: number
   adaptToWindowSize() {
     const w = window.innerWidth
     const h = window.innerHeight
@@ -153,9 +154,10 @@ class Main {
     this.renderer.setSize(w, h)
     this.flickTh = w / 7
   }
-  constructor() {
+  constructor(seed: number) {
+    this.seed = seed
     this.adaptToWindowSize()
-    this.world = new World(1);
+    this.world = new World(this.seed);
     document.body.appendChild(this.renderer.domElement)
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight
@@ -203,7 +205,7 @@ class Main {
       const r0 = Math.min(1, (this.clock.getElapsedTime() - now) / t)
       const r = 1 - (1 - r0) ** 2
       const pos = C.interVecL(cp0.pos, cp1.pos, r)
-      console.log(JSON.stringify({ rt: ((this.clock.elapsedTime - now) / t), r: r, pos: pos, cp: [cp0.pos, cp1.pos] }))
+      // console.log(JSON.stringify({ rt: ((this.clock.elapsedTime - now) / t), r: r, pos: pos, cp: [cp0.pos, cp1.pos] }))
       this.camera.position.set(pos.x, pos.y, pos.z)
       this.camera.up = C.interVec(cp0.top, cp1.top, r)
       this.camera.lookAt(C.interVec(cp0.fore, cp1.fore, r).multiplyScalar(1e10))
@@ -236,12 +238,6 @@ class Main {
       } else {
         const dx = this.touchMove.x - this.touchStart.x
         const dy = this.touchMove.y - this.touchStart.y
-        const dist = Math.sqrt(dx ** 2 + dy ** 2)
-        console.log({
-          dist: dist, dx: dy, dy: dy,
-          move: this.touchMove,
-          st: this.touchStart
-        })
         const dir = Math.floor(Math.atan2(dy, dx) * 2 / Math.PI + 4.5) % 4
         switch (dir) {
           case 0: turnY(1); break
@@ -350,7 +346,11 @@ class Main {
     me.position.set(item.p.x, item.p.y, item.p.z)
     this.scene.add(me)
     this.items.set(item.id, () => {
-      got = this.clock.getElapsedTime()
+      if (got == null) {
+        console.log({ getItem: item.id })
+        got = this.clock.getElapsedTime()
+        this.items.delete(item.id)
+      }
     })
   }
 
@@ -369,13 +369,10 @@ class Main {
 
   placeObjects() {
     const items = [...this.world.items]
-    items.push({ id: -1, p: this.world.pos })
+    this.addStartObj({ id: -1, p: this.world.pos })
     for (const item of items) {
       switch (item.id) {
-        case -1:
-          this.addStartObj(item)
-          break
-        case 2:
+        case World.goalID:
           this.addGoalObj(item)
           break
         default:
@@ -421,7 +418,6 @@ class Main {
       const ctx = canvas.getContext("2d")!
       const ax = k >> 10
       const f = k & 1023
-      console.log({ ax: ax, f: f })
       drawWall(ctx, cw, ax, f)
       const mate = new Mate({
         map: new THREE.CanvasTexture(canvas),
@@ -471,6 +467,11 @@ window.onresize = () => onReize()
 
 window.onload = () => {
   onReize()
+  const t = new Date().getTime();
+  const t0 = new Date('2024-01-01T00:00:00+09:00').getTime();
+  // const t0 = new Date('2024-06-01T20:48:00+09:00').getTime();
+  const seed = Math.floor((t - t0) / (24 * 60 * 60 * 1000));
+  console.log({ seed: seed });
   const setEvent = (id: string, proc: () => void) => {
     const o = document.getElementById(id)
     if (o != null) {
@@ -482,7 +483,6 @@ window.onload = () => {
     if (o != null) {
       o.style.display = "none";
     }
-
-    (new Main()).animate();
+    (new Main(seed)).animate();
   })
 }
