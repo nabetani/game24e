@@ -6,6 +6,7 @@ import *  as W from './world'
 import *  as C from './calc'
 import { range } from './calc'
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+import { itemInfo } from './itemInfos'
 
 type DoSomething = { (): boolean };
 
@@ -146,6 +147,9 @@ class Main {
   clock = new THREE.Clock(true)
   items: Map<number, () => void> = new Map<number, () => void>()
   seed: number
+  domMsg = document.getElementById("msg")!
+  domMsgT = 0
+
   adaptToWindowSize() {
     const w = window.innerWidth
     const h = window.innerHeight
@@ -173,6 +177,10 @@ class Main {
     this.stats.showPanel(0);
     this.world.onItem = (i: W.itemLocType) => { this.onItem(i) }
     document.getElementById("stats")!.appendChild(this.stats.dom);
+  }
+  showMsg(msg: string) {
+    this.domMsg.innerText = msg
+    this.domMsgT = this.clock.getElapsedTime() + 3
   }
   onItem(i: W.itemLocType) {
     const proc = this.items.get(i.id)
@@ -347,6 +355,8 @@ class Main {
     this.scene.add(me)
     this.items.set(item.id, () => {
       if (got == null) {
+        const name = item.id == World.goalID ? "魔法のタイツ" : itemInfo(item.id).uname
+        this.showMsg(`${name} を手に入れた。`)
         console.log({ getItem: item.id })
         got = this.clock.getElapsedTime()
         this.items.delete(item.id)
@@ -443,6 +453,18 @@ class Main {
     const s = () => this.animate();
     requestAnimationFrame(s);
     this.stats.end();
+    {
+      const o = document.getElementById("msg")!
+      const opa = parseFloat(o.style.opacity);
+      if (0 < opa) {
+        o.style.opacity = `${Math.max(0, opa - 0.01)}`;
+      }
+    }
+    {
+      const t = this.domMsgT - this.clock.getElapsedTime()
+      const opa = C.clamp(t, 0, 1);
+      this.domMsg.style.opacity = `${opa}`
+    }
     // console.log(`renderer.info: ${JSON.stringify(this.renderer.info)}`)
   }
 }
@@ -465,6 +487,11 @@ const onReize = () => {
 }
 window.onresize = () => onReize()
 
+const setStyle = (id: string, attr: string, value: string) => {
+  const o = document.getElementById(id)!;
+  o.style.setProperty(attr, value)
+}
+
 window.onload = () => {
   onReize()
   const t = new Date().getTime();
@@ -479,10 +506,9 @@ window.onload = () => {
     }
   };
   setEvent("startGame", () => {
-    const o = document.getElementById("title");
-    if (o != null) {
-      o.style.display = "none";
-    }
+    setStyle("title", "display", "none");
+    setStyle("msg", "opacity", "0");
+    setStyle("msg", "display", "block");
     (new Main(seed)).animate();
   })
 }

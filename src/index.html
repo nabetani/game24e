@@ -23,6 +23,12 @@
       border: none;
       margin: 0;
       padding: 0;
+      font-family:
+        "Hiragino Kaku Gothic ProN",
+        "Hiragino Sans",
+        Meiryo,
+        "Noto Sans JP",
+        sans-serif;
     }
 
     canvas {
@@ -80,11 +86,40 @@
       border-radius: calc(var(--sizeUnit) * 0.3);
       font-size: calc(var(--sizeUnit) * 2);
     }
+
+    div#msg-outer {
+      position: fixed;
+      top: 0px;
+      box-sizing: border-box;
+      width: 100vw;
+      padding: 0;
+      z-index: 10000000;
+      display: flex;
+      justify-content: center;
+      margin-top: calc(var(--sizeUnit));
+    }
+
+    div#msg {
+      max-width: calc(var(--sizeUnit)*45);
+      text-align: center;
+      align-self: center;
+      box-sizing: border-box;
+      padding: calc(var(--sizeUnit));
+      margin: calc(var(--sizeUnit));
+      border: dotted blue 3px;
+      border-radius: calc(var(--sizeUnit));
+      font-size: calc(var(--sizeUnit) * 2);
+      background-color: white;
+      display: none;
+    }
   </style>
 </head>
 
 <body id="body">
   <div id="stats"></div>
+  <div id="msg-outer">
+    <div id="msg">msg</div>
+  </div>
   <div id="title">
     <img id="title-img" src="assets/title.webp" />
     <div class="start" id="start">

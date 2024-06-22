@@ -60,6 +60,10 @@ const itemsInfos: ItemInfoType[] = [
     { rarity: 5, name: "ガーゴイルの角の破片（ツルツルしている）", uname: "ツルツルした物体" },
 ]
 
+export const itemInfo = (id: number): ItemInfoType => {
+    return itemsInfos[id]!
+}
+
 export class ItemSelector {
     seed: number
     constructor(seed: number) {
