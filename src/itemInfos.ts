@@ -80,7 +80,7 @@ export class ItemSelector {
     }
     getIDs(n: number): number[] {
         const rngR = this.newRng(0)
-        const raList: number[] = []
+        const raList: number[] = [...range(0, n)].map(() => ItemSelector.rarity(rngR.f(1)))
         const ids: number[] = []
         for (const ra of raList) {
             const rng = this.newRng(ra)
