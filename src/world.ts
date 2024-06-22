@@ -256,7 +256,7 @@ class Builder {
         throw "logic error"
     }
     build() {
-        this.makeRoom({ x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
+        this.makeRoom({ x: 0, y: 0, z: 0 }, { x: 2, y: 2, z: 2 })
         const rep = (n: number, proc: () => void) => {
             for (const _ of range(0, n)) {
                 proc()
