@@ -112,11 +112,47 @@
       background-color: white;
       display: none;
     }
+
+    img.sign {
+      width: 3.5vh;
+      border: dotted #ddd 0.2vh;
+      border-radius: 0.6vh;
+      margin: 0.2vh;
+      padding: 0.3vh;
+      background-color: #222;
+      opacity: 0;
+    }
+
+    div#signs-outer {
+      position: fixed;
+      /* border: solid red 3px; */
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    div#signs {
+      display: flex;
+      justify-content: right;
+      align-items: right;
+      width: 100vw;
+      padding-top: 3vh;
+      padding-right: 3vh;
+      /* border: dashed green 3px; */
+    }
   </style>
 </head>
 
 <body id="body">
   <div id="stats"></div>
+  <div id="signs-outer">
+    <div id="signs">
+      <img class="sign" id="tsign" src="assets/tsign.webp" />
+      <img class="sign" id="isign0" src="assets/isign.webp" />
+      <img class="sign" id="isign1" src="assets/isign.webp" />
+    </div>
+  </div>
   <div id="msg-outer">
     <div id="msg">msg</div>
   </div>

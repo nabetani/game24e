@@ -143,7 +143,6 @@ class Main {
   animates: (() => void)[] = []
   touchStart: { x: number, y: number } | null = null
   touchMove: { x: number, y: number } | null = null
-  flickTh = 40
   clock = new THREE.Clock(true)
   items: Map<number, () => void> = new Map<number, () => void>()
   seed: number
@@ -156,7 +155,7 @@ class Main {
     this.camera.aspect = w / h
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(w, h)
-    this.flickTh = w / 7
+    this.renderer.setPixelRatio(2);
   }
   constructor(seed: number) {
     this.seed = seed
@@ -176,8 +175,10 @@ class Main {
     this.clock.start()
     this.stats.showPanel(0);
     this.world.onItem = (i: W.itemLocType) => { this.onItem(i) }
+    this.world.onGoal = () => this.onGoal()
     document.getElementById("stats")!.appendChild(this.stats.dom);
   }
+  onGoal() { }
   showMsg(msg: string) {
     this.domMsg.innerText = msg
     this.domMsgT = this.clock.getElapsedTime() + 3
@@ -355,13 +356,40 @@ class Main {
     this.scene.add(me)
     this.items.set(item.id, () => {
       if (got == null) {
+        this.world.addToBag(item.id)
         const name = item.id == World.goalID ? "魔法のタイツ" : itemInfo(item.id).uname
         this.showMsg(`${name} を手に入れた。`)
         console.log({ getItem: item.id })
         got = this.clock.getElapsedTime()
         this.items.delete(item.id)
+        this.updateItemState()
       }
     })
+  }
+  updateItemState() {
+    const s = this.world.itemStates()
+    const g = document.getElementById("tsign")!
+    const i = [document.getElementById("isign0")!, document.getElementById("isign1")!]
+    g.style.opacity = `${s.g == null ? 0 : 1}`
+    if (s.g == "stock") {
+      g.style.borderStyle = "solid"
+    } else if (s.g == "bag") {
+      g.style.borderStyle = "dotted"
+    }
+    for (let ix = 0; ix < s.stock; ix++) {
+      const e = i.shift()
+      if (e) {
+        e.style.opacity = "1"
+        e.style.borderStyle = "solid"
+      }
+    }
+    for (let ix = 0; ix < s.bag; ix++) {
+      const e = i.shift()
+      if (e) {
+        e.style.opacity = "1"
+        e.style.borderStyle = "dotted"
+      }
+    }
   }
 
   addItemObj(item: W.itemLocType) {

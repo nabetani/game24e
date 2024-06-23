@@ -347,6 +347,18 @@ export class World {
     static get goalID() { return -1 }
     items: itemLocType[] = []
     onItem: (i: itemLocType) => void = () => { }
+    onGoal: () => void = () => { }
+    itemsInBag = new Set<number>()
+    itemsInStock = new Set<number>()
+
+    constructor(seed: number) {
+        const { walls, ws, items } = build(seed)
+        // this.itemsInStock.add(World.goalID)
+        this.walls = walls
+        this.worldSize = ws
+        this.items = items.filter(e => !this.itemsInStock.has(e.id))
+    }
+
     get fore(): xyz {
         return dirToXyz(this.iFore)
     }
@@ -357,6 +369,17 @@ export class World {
         const f = mulScalarXyz(-0.3, this.fore)
         const p = addXyz(this.pos, f)
         return { pos: p, fore: this.fore, top: this.top }
+    }
+
+    addToBag(id: number) {
+        this.itemsInBag.add(id)
+    }
+    itemStates(): { g: ("stock" | "bag" | null), stock: number, bag: number } {
+        const gs = this.itemsInStock.has(World.goalID)
+        const gb = this.itemsInBag.has(World.goalID)
+        const sc = this.itemsInStock.size - (gs ? 1 : 0)
+        const bc = this.itemsInBag.size - (gb ? 1 : 0)
+        return { g: (gs ? "stock" : (gb ? "bag" : null)), stock: sc, bag: bc }
     }
 
     turnY(d: number): boolean {
@@ -377,6 +400,9 @@ export class World {
             (d < 0) ? [invDir(this.iTop), this.iFore] : [this.iTop, invDir(this.iFore)]
         return true
     }
+    hasTights(): boolean {
+        return this.itemsInBag.has(World.goalID) || this.itemsInStock.has(World.goalID)
+    }
     move(): boolean {
         const d = dirToXyz(this.iFore)
         const dest = addXyz(this.pos, d)
@@ -396,13 +422,10 @@ export class World {
         this.pos = dest
         const i = this.items.find((i) => isSameXyz(i.p, this.pos))
         if (i != null) { this.onItem(i) }
+        if (isSameXyz(this.pos, { x: 0, y: 0, z: 0 }) && this.hasTights()) {
+            this.onGoal()
+        }
         return true
-    }
-    constructor(seed: number) {
-        const { walls, ws, items } = build(seed)
-        this.walls = walls
-        this.worldSize = ws
-        this.items = items
     }
     posToIx(pos: xyz): number | null {
         return posToIx(pos, this.size)
