@@ -6,7 +6,7 @@ import *  as W from './world'
 import *  as C from './calc'
 import { range } from './calc'
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
-import { itemInfo } from './itemInfos'
+import { ItemSelector, itemInfo } from './itemInfos'
 
 type DoSomething = { (): boolean };
 
@@ -175,12 +175,27 @@ class Main {
     this.clock.start()
     this.stats.showPanel(0);
     this.world.onItem = (i: W.itemLocType) => { this.onItem(i) }
-    this.world.onGoal = () => this.onGoal()
+    this.world.onGoal = (gi: W.GoalInfo) => this.onGoal(gi)
     document.getElementById("stats")!.appendChild(this.stats.dom);
     this.updateItemState()
   }
-  onGoal() {
+  onGoal(gi: W.GoalInfo) {
     this.updateItemState()
+    if (this.world.hasTights()) {
+      const lines: string[] = []
+      if (gi.newItems.includes(World.goalID)) {
+        lines.push("タイツとともに帰還成功")
+      }
+      for (const id of gi.newItems) {
+        if (id == World.goalID) { continue }
+        const i = itemInfo(id)
+        const stars = "★".repeat(i.rarity)
+        lines.push(`${i.uname} の正体は ${i.name} (希少性: ${stars}) だった。`)
+      }
+      // this.showMsg(lines)
+    } else {
+      this.showMsg("タイツがないので帰れない...")
+    }
   }
   showMsg(msg: string) {
     this.domMsg.innerText = msg

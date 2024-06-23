@@ -15,6 +15,10 @@ export type xyz = { x: number, y: number, z: number }
 
 export type itemLocType = { id: number, p: xyz }
 
+export type GoalInfo = {
+    newItems: number[]
+}
+
 const numSign = (x: number): number => { return x < 0 ? -1 : (0 < x ? 1 : 0) }
 
 export type CamPoseType = {
@@ -359,7 +363,7 @@ export class World {
     static get goalID() { return -1 }
     items: itemLocType[] = []
     onItem: (i: itemLocType) => void = () => { }
-    onGoal: () => void = () => { }
+    onGoal: (gi: GoalInfo) => void = () => { }
     itemsInBag = new Set<number>()
     itemsInStock = new Set<number>()
     day: number
@@ -440,17 +444,20 @@ export class World {
         this.pos = dest
         const i = this.items.find((i) => isSameXyz(i.p, this.pos))
         if (i != null) { this.onItem(i) }
-        if (isSameXyz(this.pos, { x: 0, y: 0, z: 0 }) && this.hasTights()) {
-            const cs = currentStocks(this.day)
+        if (isSameXyz(this.pos, { x: 0, y: 0, z: 0 })) {
             if (this.hasTights()) {
+                const cs = currentStocks(this.day)
+                const gi: GoalInfo = { newItems: [...this.itemsInBag.keys()] }
                 for (const id of this.itemsInBag.keys()) {
                     this.itemsInStock.add(id)
                     cs.stocks.push(id)
                 }
                 WS.currentStocks.write(cs)
                 this.itemsInBag.clear()
+                this.onGoal(gi)
+            } else {
+                this.onGoal({ newItems: [] })
             }
-            this.onGoal()
         }
         return true
     }
