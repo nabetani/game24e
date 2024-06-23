@@ -1,7 +1,7 @@
 import { range, clamp } from "./calc"
 import { ItemSelector } from "./itemInfos"
 import { Rng } from "./rng"
-
+import *  as WS from './wstorage'
 
 export type wall = number
 export const wallX: wall = 1
@@ -329,6 +329,18 @@ class Builder {
         return r
     }
 }
+const currentStocks = (day: number): WS.CurrentStocks => {
+    {
+        const r = WS.currentStocks.value
+        if (r.day === day) {
+            return r
+        }
+    }
+    const r: WS.CurrentStocks = { day: day, stocks: [] }
+    WS.currentStocks.write(r)
+    return r
+}
+
 
 const build = (seed: number): { walls: wall[], ws: xyz, items: itemLocType[] } => {
     const wsbase = 5
@@ -350,8 +362,14 @@ export class World {
     onGoal: () => void = () => { }
     itemsInBag = new Set<number>()
     itemsInStock = new Set<number>()
+    day: number
 
-    constructor(seed: number) {
+    constructor(seed: number, day: number) {
+        this.day = day
+        const cs = currentStocks(day)
+        for (const id of cs.stocks) {
+            this.itemsInStock.add(id)
+        }
         const { walls, ws, items } = build(seed)
         // this.itemsInStock.add(World.goalID)
         this.walls = walls
@@ -423,6 +441,15 @@ export class World {
         const i = this.items.find((i) => isSameXyz(i.p, this.pos))
         if (i != null) { this.onItem(i) }
         if (isSameXyz(this.pos, { x: 0, y: 0, z: 0 }) && this.hasTights()) {
+            const cs = currentStocks(this.day)
+            if (this.hasTights()) {
+                for (const id of this.itemsInBag.keys()) {
+                    this.itemsInStock.add(id)
+                    cs.stocks.push(id)
+                }
+                WS.currentStocks.write(cs)
+                this.itemsInBag.clear()
+            }
             this.onGoal()
         }
         return true

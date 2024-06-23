@@ -157,10 +157,10 @@ class Main {
     this.renderer.setSize(w, h)
     this.renderer.setPixelRatio(2);
   }
-  constructor(seed: number) {
+  constructor(seed: number, day: number) {
     this.seed = seed
     this.adaptToWindowSize()
-    this.world = new World(this.seed);
+    this.world = new World(this.seed, day);
     document.body.appendChild(this.renderer.domElement)
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight
@@ -177,8 +177,11 @@ class Main {
     this.world.onItem = (i: W.itemLocType) => { this.onItem(i) }
     this.world.onGoal = () => this.onGoal()
     document.getElementById("stats")!.appendChild(this.stats.dom);
+    this.updateItemState()
   }
-  onGoal() { }
+  onGoal() {
+    this.updateItemState()
+  }
   showMsg(msg: string) {
     this.domMsg.innerText = msg
     this.domMsgT = this.clock.getElapsedTime() + 3
@@ -525,7 +528,8 @@ window.onload = () => {
   const t = new Date().getTime();
   const t0 = new Date('2024-01-01T00:00:00+09:00').getTime();
   // const t0 = new Date('2024-06-01T20:48:00+09:00').getTime();
-  const seed = Math.floor((t - t0) / (24 * 60 * 60 * 1000));
+  const day = Math.floor((t - t0) / (24 * 60 * 60 * 1000));
+  const seed = (day * 101) ^ 0x55
   console.log({ seed: seed });
   const setEvent = (id: string, proc: () => void) => {
     const o = document.getElementById(id)
@@ -537,6 +541,6 @@ window.onload = () => {
     setStyle("title", "display", "none");
     setStyle("msg", "opacity", "0");
     setStyle("msg", "display", "block");
-    (new Main(seed)).animate();
+    (new Main(seed, day)).animate();
   })
 }
