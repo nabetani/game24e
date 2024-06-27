@@ -10,6 +10,14 @@ import { ItemSelector, itemInfo } from './itemInfos'
 
 type DoSomething = { (): boolean };
 
+const domItem = (tag: string, text: null | string = null): HTMLElement => {
+  const o = document.createElement(tag)
+  if (text != null) {
+    o.textContent = text
+  }
+  return o
+}
+
 const rotataCtx = (ctx: CanvasRenderingContext2D, th: number, x: number, y: number) => {
   ctx.translate(x, y);
   ctx.rotate(th)
@@ -146,8 +154,9 @@ class Main {
   clock = new THREE.Clock(true)
   items: Map<number, () => void> = new Map<number, () => void>()
   seed: number
-  domMsg = document.getElementById("msg")!
-  domMsgT = 0
+  simpleMsg = document.getElementById("msg")!
+  domMsg = document.getElementById("domMsg")!
+  simpleMsgT = 0
 
   adaptToWindowSize() {
     const w = window.innerWidth
@@ -177,29 +186,61 @@ class Main {
     this.world.onItem = (i: W.itemLocType) => { this.onItem(i) }
     this.world.onGoal = (gi: W.GoalInfo) => this.onGoal(gi)
     document.getElementById("stats")!.appendChild(this.stats.dom);
-    this.updateItemState()
+    this.updateItemState();
+  }
+  tGoal(gi: W.GoalInfo) {
+    const msg = domItem("div", gi.newItems.includes(World.goalID) ? "タイツとともに帰還成功!" : null);
+    const ul = domItem("ul")
+    let lineCount = 0
+    for (const id of gi.newItems) {
+      if (id == World.goalID) { continue }
+      ++lineCount
+      const i = itemInfo(id)
+      const stars = "★".repeat(i.rarity)
+      const li = domItem("li", i.uname)
+      const dl = domItem("dl")
+      dl.appendChild(domItem("dt", "正体"))
+      dl.appendChild(domItem("dd", i.name))
+      dl.appendChild(domItem("dt", "希少性"))
+      dl.appendChild(domItem("dd", stars))
+      li.appendChild(dl)
+      ul.appendChild(li)
+    }
+    if (0 < lineCount) {
+      msg.appendChild(domItem("div", "入手アイテムを調べてもらった"))
+      msg.appendChild(ul)
+    }
+    this.showDom(msg)
   }
   onGoal(gi: W.GoalInfo) {
     this.updateItemState()
     if (this.world.hasTights()) {
-      const lines: string[] = []
-      if (gi.newItems.includes(World.goalID)) {
-        lines.push("タイツとともに帰還成功")
-      }
-      for (const id of gi.newItems) {
-        if (id == World.goalID) { continue }
-        const i = itemInfo(id)
-        const stars = "★".repeat(i.rarity)
-        lines.push(`${i.uname} の正体は ${i.name} (希少性: ${stars}) だった。`)
-      }
-      // this.showMsg(lines)
+      this.tGoal(gi)
     } else {
       this.showMsg("タイツがないので帰れない...")
     }
   }
+  showDom(msg: HTMLElement) {
+    while (this.domMsg.firstChild) {
+      this.domMsg.removeChild(this.domMsg.firstChild);
+    }
+    this.domMsg.appendChild(msg)
+
+    const b = domItem("button", "OK")
+    b.onclick = () => {
+      this.domMsg.style.display = "none";
+    }
+    this.domMsg.appendChild(b)
+    msg.appendChild(b)
+    this.domMsg.style.display = "block";
+
+
+
+    this.domMsg.style.opacity = "1"
+  }
   showMsg(msg: string) {
-    this.domMsg.innerText = msg
-    this.domMsgT = this.clock.getElapsedTime() + 3
+    this.simpleMsg.innerText = msg
+    this.simpleMsgT = this.clock.getElapsedTime() + 3
   }
   onItem(i: W.itemLocType) {
     const proc = this.items.get(i.id)
@@ -507,9 +548,9 @@ class Main {
       }
     }
     {
-      const t = this.domMsgT - this.clock.getElapsedTime()
+      const t = this.simpleMsgT - this.clock.getElapsedTime()
       const opa = C.clamp(t, 0, 1);
-      this.domMsg.style.opacity = `${opa}`
+      this.simpleMsg.style.opacity = `${opa}`
     }
     // console.log(`renderer.info: ${JSON.stringify(this.renderer.info)}`)
   }
@@ -556,6 +597,7 @@ window.onload = () => {
     setStyle("title", "display", "none");
     setStyle("msg", "opacity", "0");
     setStyle("msg", "display", "block");
+    setStyle("domMsg", "display", "none");
     (new Main(seed, day)).animate();
   })
 }

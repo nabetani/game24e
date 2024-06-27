@@ -31,6 +31,11 @@
         sans-serif;
     }
 
+    li {
+      text-align: left;
+      font-size: calc(var(--sizeUnit) * 2);
+    }
+
     canvas {
       display: none;
     }
@@ -87,7 +92,7 @@
       font-size: calc(var(--sizeUnit) * 2);
     }
 
-    div#msg-outer {
+    div.msg-outer {
       position: fixed;
       top: 0px;
       box-sizing: border-box;
@@ -99,7 +104,7 @@
       margin-top: calc(var(--sizeUnit));
     }
 
-    div#msg {
+    div.msg {
       max-width: calc(var(--sizeUnit)*45);
       text-align: center;
       align-self: center;
@@ -141,6 +146,42 @@
       padding-right: 3vh;
       /* border: dashed green 3px; */
     }
+
+    ul {
+      list-style-position: outside;
+      list-style-type: none;
+    }
+
+    li {
+      /* overflow: visible; */
+      display: list-item;
+      /* margin-left: calc(var(--sizeUnit)*2); */
+      margin-top: calc(var(--sizeUnit)*1);
+      /* border: solid red 1px; */
+    }
+
+    dl {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+      padding-left: 5%;
+    }
+
+    dt {
+      width: calc(25% - var(--sizeUnit)*0.5);
+      text-align: center;
+      vertical-align: middle;
+      background-color: #DADADA;
+      margin: calc(var(--sizeUnit)*0.2);
+      padding: calc(var(--sizeUnit)*0.2);
+    }
+
+    dd {
+      width: calc(75% - var(--sizeUnit)*0.5);
+      background-color: #F3F3F3;
+      margin: calc(var(--sizeUnit)*0.2);
+      padding: calc(var(--sizeUnit)*0.2);
+    }
   </style>
 </head>
 
@@ -153,8 +194,11 @@
       <img class="sign" id="isign1" src="assets/isign.webp" />
     </div>
   </div>
-  <div id="msg-outer">
-    <div id="msg">msg</div>
+  <div class="msg-outer">
+    <div class="msg" id="msg">msg</div>
+  </div>
+  <div class="msg-outer">
+    <div class="msg" id="domMsg">msg</div>
   </div>
   <div id="title">
     <img id="title-img" src="assets/title.webp" />
