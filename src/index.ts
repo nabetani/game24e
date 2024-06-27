@@ -415,6 +415,7 @@ class Main {
     this.scene.add(me)
     this.items.set(item.id, () => {
       if (got == null) {
+        // console.log({ item: item })
         this.world.addToBag(item.id)
         const name = item.id == World.goalID ? "魔法のタイツ" : itemInfo(item.id).uname
         this.showMsg(`${name} を手に入れた。`)

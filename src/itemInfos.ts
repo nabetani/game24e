@@ -89,9 +89,10 @@ export class ItemSelector {
     for (const ra of raList) {
       const rng = this.newRng(ra)
       for (; ;) {
-        const cand = rng.i(10) + ra * 10
+        const cand = rng.i(10) + (ra - 1) * 10
         if (!ids.includes(cand)) {
           ids.push(cand)
+          // console.log({ cand: cand, ra: ra, ids: ids })
           break
         }
       }
