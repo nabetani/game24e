@@ -244,14 +244,6 @@ class Main {
     const proc = this.items.get(i.id)
     if (proc != null) { proc() }
   }
-  addPointlight(pos: W.xyz, col: number, intensity: number): THREE.PointLight {
-    const pol = new THREE.PointLight(col, intensity, 0)
-    pol.position.copy(pos)
-    pol.castShadow = true
-    this.scene.add(pol)
-    return pol
-  }
-
   initLight() {
     this.scene.add(new THREE.AmbientLight(0x88ffff, 0.8))
   }
@@ -337,12 +329,24 @@ class Main {
       }
     })
   }
-  addStartObj(item: W.itemLocType) {
-    const lp = 0.1
-    this.addPointlight({ x: -lp, y: -lp, z: -lp }, 0xffffff, 2)
-    const ma = new THREE.MeshStandardMaterial({
-      color: 0x002844
+
+  startObjMaterial(): THREE.Material {
+    const envMap = this.tloader.load("assets/env0.webp")
+    const tMap = this.tloader.load("assets/env0.webp")
+    envMap.mapping = THREE.EquirectangularReflectionMapping
+    envMap.magFilter = THREE.LinearFilter
+    envMap.minFilter = THREE.LinearMipMapLinearFilter
+    const ma = new THREE.MeshBasicMaterial({
+      envMap: envMap,
+      map: tMap,
+      combine: THREE.MultiplyOperation,
     })
+    return ma
+  }
+
+
+  addStartObj(item: W.itemLocType) {
+    const ma = this.startObjMaterial()
     const size = 1 / 20
     const ge = new THREE.TorusGeometry(size, size / 3, 8, 7)
     const me = new THREE.Mesh(ge, ma)
@@ -377,7 +381,7 @@ class Main {
   }
 
   itemMaterial(): THREE.Material {
-    const envMap = this.tloader.load("assets/wall0.webp")
+    const envMap = this.tloader.load("assets/env0.webp")
     envMap.mapping = THREE.EquirectangularReflectionMapping
     envMap.magFilter = THREE.LinearFilter
     envMap.minFilter = THREE.LinearMipMapLinearFilter
