@@ -176,7 +176,7 @@ class Main {
       this.camera.updateProjectionMatrix()
       this.renderer.setSize(window.innerWidth, window.innerHeight)
     });
-    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.enabled = false;
     this.setInputEvents();
     this.walk(() => false);
     this.initMap();
@@ -245,7 +245,7 @@ class Main {
     if (proc != null) { proc() }
   }
   initLight() {
-    this.scene.add(new THREE.AmbientLight(0x88ffff, 0.8))
+    this.scene.add(new THREE.AmbientLight(0xffffff, 1.5))
   }
   walk(proc: () => boolean) {
     if (1 < this.queue.length) {
@@ -350,7 +350,7 @@ class Main {
     const size = 1 / 20
     const ge = new THREE.TorusGeometry(size, size / 3, 8, 7)
     const me = new THREE.Mesh(ge, ma)
-    me.castShadow = me.receiveShadow = true
+    me.castShadow = me.receiveShadow = false
     this.animates.push(() => {
       const t = this.clock.getElapsedTime() * 2
       const ta = t / 3
@@ -376,7 +376,7 @@ class Main {
       new THREE.CapsuleGeometry(ra, wi, 10).translate(-le / 2, 0, 0).rotateZ(Math.PI / 2)
     ], true);
     const me = new THREE.Mesh(ge, ma)
-    me.castShadow = me.receiveShadow = true
+    me.castShadow = me.receiveShadow = false
     this.addStdObj(item, me)
   }
 
@@ -463,7 +463,7 @@ class Main {
       new THREE.TetrahedronGeometry(ra).rotateX(Math.PI / 2),
     ], true);
     const me = new THREE.Mesh(ge, ma)
-    me.castShadow = me.receiveShadow = true
+    me.castShadow = me.receiveShadow = false
     this.addStdObj(item, me)
   }
 
@@ -524,8 +524,8 @@ class Main {
       })
       const geometry = BufferGeometryUtils.mergeGeometries(geomArray, true);
       const me = new THREE.Mesh(geometry, mate)
-      me.receiveShadow = true;
-      me.castShadow = true;
+      me.receiveShadow = false;
+      me.castShadow = false;
       this.scene.add(me)
     });
   }
