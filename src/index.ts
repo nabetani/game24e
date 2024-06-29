@@ -489,9 +489,15 @@ class Main {
     return new THREE.CanvasTexture(canvas)
   }
   wallGT(x: number, y: number, z: number, ax: number, te: Map<string, THREE.Texture>): { ge: THREE.BufferGeometry[], ma: THREE.Material[] } {
-    const th = 0.1
+    const th = 1 / 20
     const p0 = new THREE.PlaneGeometry(1, 1)
     const p1 = new THREE.PlaneGeometry(1, 1)
+    const cr = 0.5 ** 0.5
+    const side = new THREE.CylinderGeometry(cr, cr, th * 2, 4, 1, true, Math.PI / 4);
+    side.rotateX(Math.PI / 2);
+    // if (ax * 2 / 2 != 2) {
+    //   return { ge: [], ma: [] }
+    // }
     switch (ax) {
       case 0:
         p0.rotateX(Math.PI);
@@ -499,29 +505,36 @@ class Main {
         p0.translate(x - 0.5 + th, y, z)
         p1.rotateY(-Math.PI / 2);
         p1.translate(x - 0.5 - th, y, z)
+        side.rotateY(-Math.PI / 2)
+        side.translate(x - 0.5, y, z);
         break;
       case 1:
         p0.rotateX(-Math.PI / 2);
         p0.translate(x, y - 0.5 + th, z)
         p1.rotateX(Math.PI / 2);
         p1.translate(x, y - 0.5 - th, z)
+        side.rotateX(-Math.PI / 2)
+        side.translate(x, y - 0.5, z);
         break;
       case 2:
         p0.translate(x, y, z - 0.5 + th)
         p1.rotateX(Math.PI);
         p1.translate(x, y, z - 0.5 - th)
+        side.translate(x, y, z - 0.5);
         break;
     }
-    const teKey = `${ax}:${z}`
-    let t = te.get(teKey)
-    if (t == null) {
-      t = this.newTexture(ax, z)
-      te.set(teKey, t)
+    const v = [x, y, z][ax]
+    const ma = (n: number): THREE.Material => {
+      const teKey = `${ax}:${n}`
+      let t = te.get(teKey)
+      if (t == null) {
+        t = this.newTexture(ax, v)
+        te.set(teKey, t)
+      }
+      return new THREE.MeshBasicMaterial({ map: t })
     }
-    const ma = new THREE.MeshBasicMaterial({
-      map: t,
-    })
-    return { ge: [p0, p1], ma: [ma, ma] }
+    const maS = new THREE.MeshBasicMaterial({ color: "#333" })
+    return { ge: [p0, p1, side], ma: [ma(v), ma(v + 1), maS] }
   }
   initMap() {
     const size = this.world.size
