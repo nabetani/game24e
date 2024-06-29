@@ -4,9 +4,10 @@ import Stats from 'three/addons/libs/stats.module.js'
 import { World } from './world'
 import *  as W from './world'
 import *  as C from './calc'
+import *  as WS from './wstorage'
 import { range } from './calc'
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
-import { ItemSelector, itemInfo } from './itemInfos'
+import { itemInfo } from './itemInfos'
 
 type DoSomething = { (): boolean };
 
@@ -645,7 +646,7 @@ window.onload = () => {
   const t = new Date().getTime();
   const t0 = new Date('2024-01-01T00:00:00+09:00').getTime();
   // const t0 = new Date('2024-06-01T20:48:00+09:00').getTime();
-  const day = Math.floor((t - t0) / (5 * 60 * 1000));
+  const day = Math.floor((t - t0) / (1 * 60 * 1000));
   const seed = (day * 101) ^ 0x55
   console.log({ seed: seed });
   const setEvent = (id: string, proc: () => void) => {
@@ -676,12 +677,16 @@ window.onload = () => {
       }
       nes.remove();
     }
-    for (let i = 0; i < 20; ++i) {
-      const tr = domItem("tr")
-      tr.appendChild(domItem("td", `${i}`))
-      tr.appendChild(domItem("td", `${i}`))
-      tr.appendChild(domItem("td", `${i}`))
-      ft.parentElement!.appendChild(tr)
-    }
+    const counts = WS.itemCounts.value
+    counts.forEach((count, id) => {
+      if (count != null && 0 < count) {
+        const ii = itemInfo(id)
+        const tr = domItem("tr")
+        tr.appendChild(domItem("td", `${ii.name}`))
+        tr.appendChild(domItem("td", `${"⭐".repeat(ii.rarity)}`))
+        tr.appendChild(domItem("td", `${count}`))
+        ft.parentElement!.appendChild(tr)
+      }
+    })
   });
 }

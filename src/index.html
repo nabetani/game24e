@@ -206,6 +206,11 @@
     .c0 {
       width: calc(var(--sizeUnit)*30);
     }
+
+    td:first-child {
+      text-align: left;
+      padding: calc(var(--sizeUnit)*0.5);
+    }
   </style>
 </head>
 
@@ -238,10 +243,15 @@
         <h1>手に入れたもの</h1>
         <div id="itemTableBox">
           <table id="itemTable">
+            <colgroup>
+              <col class="c0" />
+              <col class="c1" />
+              <col class="c2" />
+            </colgroup>
             <tr id="firstTR">
-              <th class="c0">名前</th>
-              <th class="c1">希少性</th>
-              <th class="c2">個数</th>
+              <th scope="col">説明</th>
+              <th scope="col">希少性</th>
+              <th scope="col">個数</th>
             </tr>
           </table>
         </div>

@@ -447,10 +447,13 @@ export class World {
       if (this.hasTights()) {
         const cs = currentStocks(this.day)
         const gi: GoalInfo = { newItems: [...this.itemsInBag.keys()] }
+        const itemCounts = WS.itemCounts.value
         for (const id of this.itemsInBag.keys()) {
           this.itemsInStock.add(id)
           cs.stocks.push(id)
+          itemCounts[id] = (itemCounts[id] || 0) + 1
         }
+        WS.itemCounts.write(itemCounts)
         WS.currentStocks.write(cs)
         this.itemsInBag.clear()
         this.onGoal(gi)

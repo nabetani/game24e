@@ -38,6 +38,6 @@ export type CurrentStocks = {
   day: number,
   stocks: number[]
 }
-export type ItemCountsType = number[]
+export type ItemCountsType = (number | null)[]
 export const currentStocks = new WSItem<CurrentStocks>("currentStocks", { day: 0, stocks: [] })
 export const itemCounts = new WSItem<ItemCountsType>("itemCounts", [])
