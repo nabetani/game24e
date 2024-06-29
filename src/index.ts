@@ -189,7 +189,8 @@ class Main {
     this.updateItemState();
   }
   tGoal(gi: W.GoalInfo) {
-    const msg = domItem("div", gi.newItems.includes(World.goalID) ? "タイツとともに帰還成功!" : null);
+    const msg = domItem("div", gi.newItems.includes(World.goalID) ? "タイツとともに帰還成功!" : "生還!");
+    msg.appendChild(domItem("br"))
     const ul = domItem("ul")
     let lineCount = 0
     for (const id of gi.newItems) {
@@ -227,18 +228,15 @@ class Main {
     this.domMsg.appendChild(msg)
 
     const b = domItem("button", "OK")
-    b.onclick = () => {
-      this.domMsg.style.display = "none";
-    }
+    const proc = () => this.domMsg.style.display = "none";
+    b.onclick = proc
+    b.ontouchend = proc
     this.domMsg.appendChild(b)
-    msg.appendChild(b)
     this.domMsg.style.display = "block";
-
-
-
     this.domMsg.style.opacity = "1"
   }
   showMsg(msg: string) {
+    this.simpleMsg.style.display = "block";
     this.simpleMsg.innerText = msg
     this.simpleMsgT = this.clock.getElapsedTime() + 3
   }
@@ -552,6 +550,9 @@ class Main {
       const t = this.simpleMsgT - this.clock.getElapsedTime()
       const opa = C.clamp(t, 0, 1);
       this.simpleMsg.style.opacity = `${opa}`
+      if (opa === 0) {
+        this.simpleMsg.style.display = "none";
+      }
     }
     // console.log(`renderer.info: ${JSON.stringify(this.renderer.info)}`)
   }
@@ -585,13 +586,13 @@ window.onload = () => {
   const t = new Date().getTime();
   const t0 = new Date('2024-01-01T00:00:00+09:00').getTime();
   // const t0 = new Date('2024-06-01T20:48:00+09:00').getTime();
-  const day = Math.floor((t - t0) / (24 * 60 * 60 * 1000));
+  const day = Math.floor((t - t0) / (5 * 60 * 1000));
   const seed = (day * 101) ^ 0x55
   console.log({ seed: seed });
   const setEvent = (id: string, proc: () => void) => {
     const o = document.getElementById(id)
     if (o != null) {
-      o.onclick = proc
+      o.onclick = o.ontouchend = proc
     }
   };
   setEvent("startGame", () => {
