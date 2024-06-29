@@ -661,4 +661,27 @@ window.onload = () => {
     setStyle("domMsg", "display", "none");
     (new Main(seed, day)).animate();
   })
+  setEvent("closeItemList", () => {
+    setStyle("menu", "display", "block");
+    setStyle("itemList", "display", "none");
+  })
+  setEvent("itemListBtn", () => {
+    setStyle("menu", "display", "none");
+    setStyle("itemList", "display", "block");
+    const ft = document.getElementById("firstTR")!
+    for (; ;) {
+      const nes = ft.nextElementSibling
+      if (nes == null) {
+        break;
+      }
+      nes.remove();
+    }
+    for (let i = 0; i < 20; ++i) {
+      const tr = domItem("tr")
+      tr.appendChild(domItem("td", `${i}`))
+      tr.appendChild(domItem("td", `${i}`))
+      tr.appendChild(domItem("td", `${i}`))
+      ft.parentElement!.appendChild(tr)
+    }
+  });
 }

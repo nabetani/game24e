@@ -48,13 +48,13 @@
       border: none;
     }
 
-    img {
+    img.fill {
       object-fit: contain;
       max-width: 100svw;
       max-height: 100svh;
     }
 
-    div.start {
+    div#start {
       position: absolute;
       top: calc(var(--sizeUnit) * 20);
       width: 100svw;
@@ -182,6 +182,30 @@
       margin: calc(var(--sizeUnit)*0.2);
       padding: calc(var(--sizeUnit)*0.2);
     }
+
+    td,
+    th {
+      background-color: white;
+    }
+
+    div#itemTableBox {
+      margin-left: auto;
+      margin-right: auto;
+      width: calc(var(--sizeUnit)*50);
+      max-height: calc(var(--sizeUnit)*40);
+      height: calc(var(--sizeUnit)*50);
+      overflow: scroll;
+    }
+
+    table#itemTable {
+      margin-left: auto;
+      margin-right: auto;
+      width: calc(var(--sizeUnit)*50);
+    }
+
+    .c0 {
+      width: calc(var(--sizeUnit)*30);
+    }
   </style>
 </head>
 
@@ -201,13 +225,28 @@
     <div class="msg" id="domMsg">msg</div>
   </div>
   <div id="title">
-    <img id="title-img" src="assets/title.webp" />
+    <img class="fill" id="title-img" src="assets/title.webp" />
     <div class="start" id="start">
-      <button>ルール説明</button>
-      <br />
-      <button id="startGame" class="large">Start</button>
-      <br />
-      <button>手に入れたもの</button>
+      <div id="menu">
+        <button>ルール説明</button>
+        <br />
+        <button id="startGame" class="large">Start</button>
+        <br />
+        <button id="itemListBtn">手に入れたもの</button>
+      </div>
+      <div id="itemList" style="display: none;">
+        <h1>手に入れたもの</h1>
+        <div id="itemTableBox">
+          <table id="itemTable">
+            <tr id="firstTR">
+              <th class="c0">名前</th>
+              <th class="c1">希少性</th>
+              <th class="c2">個数</th>
+            </tr>
+          </table>
+        </div>
+        <button id="closeItemList">OK</button>
+      </div>
     </div>
     <div class="bottom" id="bottom">
       <button>制作ノート</button>
@@ -217,6 +256,7 @@
       <button>SUZURI - Nabetani-T</button>
       <button>タイッツー #タイツダンジョン</button>
     </div>
+  </div>
 </body>
 
 </html>
