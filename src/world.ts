@@ -229,7 +229,6 @@ class Builder {
   }
   centerRoom() {
     const c = this.randomReachable()
-    const c0 = JSON.stringify(c)
     const s = {
       x: this.rng.i(4) + 1,
       y: this.rng.i(4) + 1,
@@ -347,7 +346,7 @@ const currentStocks = (day: number): WS.CurrentStocks => {
 
 
 const build = (seed: number): { walls: wall[], ws: xyz, items: itemLocType[] } => {
-  const wsbase = 5
+  const wsbase = 7
   const b = new Builder({ x: wsbase, y: wsbase, z: wsbase }, seed)
   b.build()
   return {
