@@ -481,53 +481,70 @@ class Main {
       }
     }
   }
-
-  initMap() {
-    const Mate = THREE.MeshLambertMaterial
-    const size = this.world.size
+  newTexture(ax: number, v: number): THREE.Texture {
+    const cw = 512
+    const canvas = newCanvas(cw)
+    const ctx = canvas.getContext("2d")!
+    drawWall(ctx, cw, ax, v)
+    return new THREE.CanvasTexture(canvas)
+  }
+  wallGT(x: number, y: number, z: number, ax: number, te: Map<string, THREE.Texture>): { ge: THREE.BufferGeometry[], ma: THREE.Material[] } {
     const th = 0.1
-    this.placeObjects()
-    const geoms: Map<number, THREE.BoxGeometry[]> = new Map<number, THREE.BoxGeometry[]>()
-    for (const ax of [0, 1, 2]) {
-      const g = [
-        new THREE.BoxGeometry(th, 1, 1),
-        new THREE.BoxGeometry(1, th, 1),
-        new THREE.BoxGeometry(1, 1, th)][ax]
-      for (const x of range(0, size.x)) {
-        for (const y of range(0, size.y)) {
-          for (const z of range(0, size.z)) {
-            const wall = this.world.cellAt({ x: x, y: y, z: z })
-            const d = (a: number) => (a == ax ? -0.5 : 0)
-            if ((wall & (1 << ax)) != 0) {
-              const cg = g.clone().translate(x + d(0), y + d(1), z + d(2))
-              const key = ax * 1024 + [x, y, z][ax]
-              const v = geoms.get(key)
-              if (v === undefined) {
-                geoms.set(key, [cg])
-              } else {
-                v.push(cg)
-              }
-            }
+    const p0 = new THREE.PlaneGeometry(1, 1)
+    const p1 = new THREE.PlaneGeometry(1, 1)
+    switch (ax) {
+      case 0:
+        p0.rotateX(Math.PI);
+        p0.rotateY(-Math.PI / 2);
+        p0.translate(x - 0.5 + th, y, z)
+        p1.rotateY(-Math.PI / 2);
+        p1.translate(x - 0.5 - th, y, z)
+        break;
+      case 1:
+        p0.rotateX(-Math.PI / 2);
+        p0.translate(x, y - 0.5 + th, z)
+        p1.rotateX(Math.PI / 2);
+        p1.translate(x, y - 0.5 - th, z)
+        break;
+      case 2:
+        p0.translate(x, y, z - 0.5 + th)
+        p1.rotateX(Math.PI);
+        p1.translate(x, y, z - 0.5 - th)
+        break;
+    }
+    const teKey = `${ax}:${z}`
+    let t = te.get(teKey)
+    if (t == null) {
+      t = this.newTexture(ax, z)
+      te.set(teKey, t)
+    }
+    const ma = new THREE.MeshBasicMaterial({
+      map: t,
+    })
+    return { ge: [p0, p1], ma: [ma, ma] }
+  }
+  initMap() {
+    const size = this.world.size
+    const gArray: THREE.BufferGeometry[] = []
+    const maArray: THREE.Material[] = []
+    const te: Map<string, THREE.Texture> = new Map<string, THREE.Texture>()
+    for (const x of range(0, size.x)) {
+      for (const y of range(0, size.y)) {
+        for (const z of range(0, size.z)) {
+          const wall = this.world.cellAt({ x: x, y: y, z: z })
+          for (const ax of range(0, 3)) {
+            if ((wall & (1 << ax)) == 0) { continue }
+            const { ge: ge, ma: ma } = this.wallGT(x, y, z, ax, te)
+            gArray.push(...ge)
+            maArray.push(...ma)
           }
         }
       }
     }
-    geoms.forEach((geomArray, k) => {
-      const cw = 512
-      const canvas = newCanvas(cw)
-      const ctx = canvas.getContext("2d")!
-      const ax = k >> 10
-      const f = k & 1023
-      drawWall(ctx, cw, ax, f)
-      const mate = new Mate({
-        map: new THREE.CanvasTexture(canvas),
-      })
-      const geometry = BufferGeometryUtils.mergeGeometries(geomArray, true);
-      const me = new THREE.Mesh(geometry, mate)
-      me.receiveShadow = false;
-      me.castShadow = false;
-      this.scene.add(me)
-    });
+    const me = new THREE.Mesh(BufferGeometryUtils.mergeGeometries(gArray, true), maArray)
+    me.receiveShadow = me.castShadow = false;
+    this.scene.add(me)
+    this.placeObjects()
   }
   animate() {
     this.stats.begin();
