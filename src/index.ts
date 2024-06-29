@@ -72,7 +72,7 @@ const labToRgb = (l: number, a: number, b: number): string => {
   return `#${col(sr)}${col(sg)}${col(sb)}`
 }
 
-const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: number) => {
+const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: number, fa: number) => {
   const col = (l: number, sa: number, co: number): string => {
     const t = co * Math.PI / 180
     const a = sa * Math.sin(t)
@@ -83,14 +83,13 @@ const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: numb
   baseCol.addColorStop(0, col(80, 50, ax * 120))
   baseCol.addColorStop(1, col(30, 100, ax * 120))
   ctx.fillStyle = baseCol;
-  const g = 10
+  const g = 0
   ctx.fillRect(g, g, cw - g * 2, cw - g * 2)
   const markCol = ctx.createLinearGradient(0, cw, cw, 0);
   const dcol = 90
   markCol.addColorStop(0, col(10, 100, ax * 120 + 180 + dcol))
   markCol.addColorStop(1, col(10, 20, ax * 120 + 180 - dcol))
   ctx.fillStyle = markCol
-  ctx.strokeStyle = markCol
   drawF(f + 1, cw / 2, cw / 2, cw * 0.4, Math.PI * 0, (x: number, y: number, r: number, th: number) => {
     switch (ax) {
       case 0:
@@ -126,11 +125,37 @@ const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: numb
         break
     }
   })
-  ctx.strokeStyle = "black"
-  ctx.lineWidth = g * 2
-  ctx.strokeRect(0, 0, cw, cw)
-
+  {
+    ctx.save()
+    const rnd = (e: number): number => {
+      return e * Math.random()
+    }
+    if (fa != 0) {
+      ctx.translate(cw / 2, cw / 2)
+      ctx.rotate(Math.PI / 8)
+      ctx.scale(1.4, 1.4)
+      ctx.translate(-cw / 2, -cw / 2)
+    }
+    const n = fa == 0 ? 15 : 8
+    const g = 0.1
+    const h = cw / n * (1 - g * 2)
+    const xa = cw / 8
+    for (const iy of range(0, n)) {
+      const y = (iy + g) / n * cw
+      let x0 = -rnd(xa)
+      while (x0 < cw) {
+        const x1 = x0 + xa * (rnd(0.5) + 0.75)
+        ctx.beginPath()
+        ctx.fillStyle = Math.random() < 0.5 ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+        ctx.roundRect(x0, y, x1 - x0, h, h / 5)
+        ctx.fill()
+        x0 = x1 + rnd(cw / n * g)
+      }
+    }
+    ctx.restore()
+  }
 }
+
 
 const newCanvas = (cw: number): HTMLCanvasElement => {
   const canvas = document.createElement("canvas")
@@ -481,11 +506,11 @@ class Main {
       }
     }
   }
-  newTexture(ax: number, v: number): THREE.Texture {
+  newTexture(ax: number, v: number, fa: number): THREE.Texture {
     const cw = 512
     const canvas = newCanvas(cw)
     const ctx = canvas.getContext("2d")!
-    drawWall(ctx, cw, ax, v)
+    drawWall(ctx, cw, ax, v, fa)
     return new THREE.CanvasTexture(canvas)
   }
   wallGT(x: number, y: number, z: number, ax: number, te: Map<string, THREE.Texture>): { ge: THREE.BufferGeometry[], ma: THREE.Material[] } {
@@ -525,16 +550,16 @@ class Main {
     }
     const v = [x, y, z][ax]
     const ma = (n: number): THREE.Material => {
-      const teKey = `${ax}:${n}`
+      const teKey = `${ax}:${v + n}:${v}`
       let t = te.get(teKey)
       if (t == null) {
-        t = this.newTexture(ax, v)
+        t = this.newTexture(ax, v, n)
         te.set(teKey, t)
       }
       return new THREE.MeshBasicMaterial({ map: t })
     }
-    const maS = new THREE.MeshBasicMaterial({ color: "#333" })
-    return { ge: [p0, p1, side], ma: [ma(v), ma(v + 1), maS] }
+    const maS = new THREE.MeshBasicMaterial({ color: "#777" })
+    return { ge: [p0, p1, side], ma: [ma(0), ma(1), maS] }
   }
   initMap() {
     const size = this.world.size
