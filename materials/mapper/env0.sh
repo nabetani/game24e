@@ -10,5 +10,5 @@ libsrc=""
 lib="-L${cv}lib/"
 lib="${lib} -lopencv_core -lopencv_imgcodecs -lopencv_imgproc"
 opts="-fexceptions -std=c++20 -Wall -O2"
-clang++ ${opts} ${inc} ${lib} main.cpp ${libsrc} -o mapper
-./mapper ../wall0.png ../../src/assets/wall0.webp
+clang++ ${opts} ${inc} ${lib} env0.cpp ${libsrc} -o env0
+./env0 ../env0.png ../../src/assets/env0.webp
