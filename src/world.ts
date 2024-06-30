@@ -424,6 +424,15 @@ export class World {
   hasTights(): boolean {
     return this.itemsInBag.has(World.goalID) || this.itemsInStock.has(World.goalID)
   }
+  get tpos(): xyz | null {
+    if (this.hasTights()) { return null }
+    for (const i of this.items) {
+      if (i.id == World.goalID) {
+        return i.p;
+      }
+    }
+    return null
+  }
   move(): boolean {
     const d = dirToXyz(this.iFore)
     const dest = addXyz(this.pos, d)

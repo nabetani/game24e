@@ -285,6 +285,23 @@ class Main {
   initLight() {
     this.scene.add(new THREE.AmbientLight(0xffffff, 1.5))
   }
+  writePos(id: string, p: W.xyz | null) {
+    const e = document.getElementById(id)!
+    if (p == null) {
+      e.style.display = "none";
+      return
+    }
+    e.style.display = "inline-block";
+    const v: number[] = [p.x, p.y, p.z]
+    for (const s of e.childNodes) {
+      if (s.nodeName.toUpperCase() == "SPAN") {
+        s.textContent = `${v.shift()! + 1}`
+      }
+      if (v.length == 0) {
+        break
+      }
+    }
+  }
   walk(proc: () => boolean) {
     if (1 < this.queue.length) {
       return
@@ -292,6 +309,7 @@ class Main {
     const cp0 = structuredClone(this.world.camPose)
     const animate = proc()
     const cp1 = structuredClone(this.world.camPose)
+    this.writePos("YourPos", this.world.pos)
     let now: null | number = null
     const t = animate ? 0.3 : 1 / 1000
     this.queue.push(() => {
@@ -467,6 +485,7 @@ class Main {
     })
   }
   updateItemState() {
+    this.writePos("TPos", this.world.tpos)
     const s = this.world.itemStates()
     const doms = [
       document.getElementById("tsign")!,

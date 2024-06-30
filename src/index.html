@@ -131,6 +131,45 @@
       background-color: #222;
     }
 
+    div#posBox {
+      position: fixed;
+      margin-top: 3vh;
+      margin-left: 3vh;
+      padding: 0;
+      z-index: 10000000;
+    }
+
+    div.pos {
+      display: inline-block;
+      margin-right: 1vh;
+      text-align: center;
+      border: solid #888 0.1px;
+      border-radius: calc(var(--sizeUnit) * 0.5);
+      background-color: #ccc;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: calc(var(--sizeUnit) * 3);
+      font-weight: bolder;
+    }
+
+    div.pos span {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: calc(var(--sizeUnit) * 3);
+      padding-left: calc(var(--sizeUnit) * 1);
+      padding-right: calc(var(--sizeUnit) * 1);
+    }
+
+    div.pos span:nth-child(3n+1) {
+      background-color: lawngreen;
+    }
+
+    div.pos span:nth-child(3n+2) {
+      background-color: aqua;
+    }
+
+    div.pos span:nth-child(3n+3) {
+      background-color: coral;
+    }
+
     div#signs-outer {
       position: fixed;
       /* border: solid red 3px; */
@@ -220,6 +259,16 @@
 <body id="body">
   <div id="game">
     <div id="stats"></div>
+    <div id="posBox">
+      <div id="YourPos" class="pos">
+        <div>You</div>
+        <span>1</span><span>2</span><span>3</span>
+      </div>
+      <div id="TPos" class="pos">
+        <div>Tights</div>
+        <span>1</span><span>2</span><span>3</span>
+      </div>
+    </div>
     <div id="signs-outer">
       <div id="signs">
         <img class="sign" id="tsign" src="assets/tsign.webp" />
