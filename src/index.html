@@ -87,6 +87,7 @@
       position: absolute;
       text-align: center;
       display: none;
+      padding-bottom: calc(var(--sizeUnit) *1);
     }
 
     div.bottom>button {
@@ -253,6 +254,17 @@
       text-align: left;
       padding: calc(var(--sizeUnit)*0.5);
     }
+
+    a {
+      white-space: nowrap;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: solid 0.3px rgba(0, 0, 0, 0.5);
+      border-radius: calc(var(--sizeUnit)*0.5);
+      font-size: calc(var(--sizeUnit)*2);
+      text-decoration: none;
+      color: black;
+      padding: calc(var(--sizeUnit)*0.5);
+    }
   </style>
 </head>
 
@@ -314,11 +326,10 @@
     </div>
     <div class="bottom" id="bottom">
       <button>制作ノート</button>
-      <button>鍋谷武典@タイッツー</button>
-      <button>Souce code and Licence</button>
-      <button>Souce code and Licence</button>
+      <a href="https://taittsuu.com/users/nabetani">鍋谷武典@タイッツー</a>
+      <a href="https://github.com/nabetani/game24e">Souce code and Licence</a>
       <button>SUZURI - Nabetani-T</button>
-      <button>タイッツー #タイツダンジョン</button>
+      <a href="https://taittsuu.com/search/taiitsus/hashtags?query=タイツダンジョン">タイッツー #タイツダンジョン</a>
     </div>
   </div>
 </body>
