@@ -468,27 +468,22 @@ class Main {
   }
   updateItemState() {
     const s = this.world.itemStates()
-    const g = document.getElementById("tsign")!
-    const i = [document.getElementById("isign0")!, document.getElementById("isign1")!]
-    g.style.opacity = `${s.g == null ? 0 : 1}`
-    if (s.g == "stock") {
-      g.style.borderStyle = "solid"
-    } else if (s.g == "bag") {
-      g.style.borderStyle = "dotted"
+    const doms = [
+      document.getElementById("tsign")!,
+      document.getElementById("isign0")!,
+      document.getElementById("isign1")!]
+    const item = (n: number): ("stock" | "bag" | null) => {
+      if (n < s.stock) { return "stock" }
+      if (n - s.stock < s.bag) { return "bag" }
+      return null
     }
-    for (let ix = 0; ix < s.stock; ix++) {
-      const e = i.shift()
-      if (e) {
-        e.style.opacity = "1"
-        e.style.borderStyle = "solid"
-      }
-    }
-    for (let ix = 0; ix < s.bag; ix++) {
-      const e = i.shift()
-      if (e) {
-        e.style.opacity = "1"
-        e.style.borderStyle = "dotted"
-      }
+    const iss = [s.g, item(0), item(1)];
+
+    for (let ix = 0; ix < 3; ++ix) {
+      const dom = doms[ix]
+      const is = iss[ix]
+      dom.style.borderStyle = is == "stock" ? "solid" : "dotted"
+      dom.style.opacity = is == null ? "0.3" : "1"
     }
   }
 
@@ -658,7 +653,7 @@ window.onload = () => {
   const t = new Date().getTime();
   const t0 = new Date('2024-01-01T00:00:00+09:00').getTime();
   // const t0 = new Date('2024-06-01T20:48:00+09:00').getTime();
-  const day = Math.floor((t - t0) / (1 * 60 * 1000));
+  const day = Math.floor((t - t0) / (24 * 60 * 60 * 1000));
   const seed = (day * 101) ^ 0x55
   console.log({ seed: seed });
   const setEvent = (id: string, proc: () => void) => {
