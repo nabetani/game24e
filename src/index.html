@@ -40,6 +40,10 @@
       display: none;
     }
 
+    div#game {
+      display: none;
+    }
+
     div#title {
       height: 100%;
       display: flex;
@@ -215,19 +219,21 @@
 </head>
 
 <body id="body">
-  <div id="stats"></div>
-  <div id="signs-outer">
-    <div id="signs">
-      <img class="sign" id="tsign" src="assets/tsign.webp" />
-      <img class="sign" id="isign0" src="assets/isign.webp" />
-      <img class="sign" id="isign1" src="assets/isign.webp" />
+  <div id="game">
+    <div id="stats"></div>
+    <div id="signs-outer">
+      <div id="signs">
+        <img class="sign" id="tsign" src="assets/tsign.webp" />
+        <img class="sign" id="isign0" src="assets/isign.webp" />
+        <img class="sign" id="isign1" src="assets/isign.webp" />
+      </div>
     </div>
-  </div>
-  <div class="msg-outer">
-    <div class="msg" id="msg">msg</div>
-  </div>
-  <div class="msg-outer">
-    <div class="msg" id="domMsg">msg</div>
+    <div class="msg-outer">
+      <div class="msg" id="msg">msg</div>
+    </div>
+    <div class="msg-outer">
+      <div class="msg" id="domMsg">msg</div>
+    </div>
   </div>
   <div id="title">
     <img class="fill" id="title-img" src="assets/title.webp" />

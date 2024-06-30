@@ -659,6 +659,7 @@ window.onload = () => {
     setStyle("title", "display", "none");
     setStyle("msg", "opacity", "0");
     setStyle("msg", "display", "block");
+    setStyle("game", "display", "block");
     setStyle("domMsg", "display", "none");
     (new Main(seed, day)).animate();
   })
