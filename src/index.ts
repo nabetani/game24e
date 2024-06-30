@@ -172,7 +172,8 @@ class Main {
   renderer = new THREE.WebGLRenderer({ antialias: true })
   tloader = new THREE.TextureLoader()
   stats = new Stats();
-  world: World
+  world_: World | null = null
+  get world(): World { return this.world_ || new World(this.seed, this.day) }
   queue: DoSomething[] = []
   animates: (() => void)[] = []
   touchStart: { x: number, y: number } | null = null
@@ -180,6 +181,7 @@ class Main {
   clock = new THREE.Clock(true)
   items: Map<number, () => void> = new Map<number, () => void>()
   seed: number
+  day: number
   simpleMsg = document.getElementById("msg")!
   domMsg = document.getElementById("domMsg")!
   simpleMsgT = 0
@@ -192,10 +194,19 @@ class Main {
     this.renderer.setSize(w, h)
     this.renderer.setPixelRatio(2);
   }
+  initWorld() {
+    this.world_ = new World(this.seed, this.day);
+    this.initMap();
+    this.world.onItem = (i: W.itemLocType) => { this.onItem(i) }
+    this.world.onGoal = (gi: W.GoalInfo) => this.onGoal(gi)
+    this.updateItemState();
+    this.camera.updateProjectionMatrix()
+    this.walk(() => false);
+  }
   constructor(seed: number, day: number) {
     this.seed = seed
+    this.day = day
     this.adaptToWindowSize()
-    this.world = new World(this.seed, day);
     document.body.appendChild(this.renderer.domElement)
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight
@@ -204,15 +215,10 @@ class Main {
     });
     this.renderer.shadowMap.enabled = false;
     this.setInputEvents();
-    this.walk(() => false);
-    this.initMap();
     this.initLight();
     this.clock.start()
     this.stats.showPanel(0);
-    this.world.onItem = (i: W.itemLocType) => { this.onItem(i) }
-    this.world.onGoal = (gi: W.GoalInfo) => this.onGoal(gi)
     document.getElementById("stats")!.appendChild(this.stats.dom);
-    this.updateItemState();
   }
   tGoal(gi: W.GoalInfo) {
     const msg = domItem("div", gi.newItems.includes(World.goalID) ? "タイツとともに帰還成功!" : "生還!");
@@ -247,17 +253,23 @@ class Main {
       this.showMsg("タイツがないので帰れない...")
     }
   }
+  goToTitle() {
+    setStyle("title", "display", "flex");
+    setStyle("game", "display", "none");
+  }
   showDom(msg: HTMLElement) {
     while (this.domMsg.firstChild) {
       this.domMsg.removeChild(this.domMsg.firstChild);
     }
     this.domMsg.appendChild(msg)
-
-    const b = domItem("button", "OK")
-    const proc = () => this.domMsg.style.display = "none";
-    b.onclick = proc
-    b.ontouchend = proc
-    this.domMsg.appendChild(b)
+    const appendBtn = (name: string, proc: () => void) => {
+      const b = domItem("button", name)
+      b.onclick = proc
+      b.ontouchend = proc
+      this.domMsg.appendChild(b)
+    }
+    appendBtn("OK", () => this.domMsg.style.display = "none");
+    appendBtn("Go to title", () => this.goToTitle());
     this.domMsg.style.display = "block";
     this.domMsg.style.opacity = "1"
   }
@@ -655,14 +667,18 @@ window.onload = () => {
       o.onclick = o.ontouchend = proc
     }
   };
-  setEvent("startGame", () => {
-    setStyle("title", "display", "none");
-    setStyle("msg", "opacity", "0");
-    setStyle("msg", "display", "block");
-    setStyle("game", "display", "block");
-    setStyle("domMsg", "display", "none");
-    (new Main(seed, day)).animate();
-  })
+  {
+    const main = new Main(seed, day);
+    setEvent("startGame", () => {
+      setStyle("title", "display", "none");
+      setStyle("msg", "opacity", "0");
+      setStyle("msg", "display", "block");
+      setStyle("game", "display", "block");
+      setStyle("domMsg", "display", "none");
+      main.initWorld();
+      main.animate();
+    })
+  }
   setEvent("closeItemList", () => {
     setStyle("menu", "display", "block");
     setStyle("itemList", "display", "none");
