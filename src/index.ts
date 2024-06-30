@@ -91,7 +91,7 @@ const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: numb
   markCol.addColorStop(0, col(10, 100, ax * 120 + 180 + dcol))
   markCol.addColorStop(1, col(10, 20, ax * 120 + 180 - dcol))
   ctx.fillStyle = markCol
-  drawF(f + 1, cw / 2, cw / 2, cw * 0.4, Math.PI * 0, (x: number, y: number, r: number, th: number) => {
+  drawF(f + 1 - fa, cw / 2, cw / 2, cw * 0.4, Math.PI * 0, (x: number, y: number, r: number, th: number) => {
     switch (ax) {
       case 0:
         {
