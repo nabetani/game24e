@@ -265,10 +265,8 @@ class Builder {
     for (const a of range(0, 3)) {
       this.makePath({ x: 0, y: 0, z: 0 }, this.farPos(a))
     }
-    rep(2, () => this.makeRing())
+    rep(4, () => this.makeRing())
     this.centerRoom()
-    rep(2, () => this.dig())
-    rep(6, () => this.makeRing())
     rep(6, () => this.dig())
     // this.reachables.forEach(e => {
     //     console.log(this.ixToPos(e))
@@ -346,7 +344,7 @@ const currentStocks = (day: number): WS.CurrentStocks => {
 
 
 const build = (seed: number): { walls: wall[], ws: xyz, items: itemLocType[] } => {
-  const wsbase = 7
+  const wsbase = 9
   const b = new Builder({ x: wsbase, y: wsbase, z: wsbase }, seed)
   b.build()
   return {
