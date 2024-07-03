@@ -173,15 +173,14 @@ class Main {
   tloader = new THREE.TextureLoader()
   stats = new Stats();
   world_: World | null = null
-  get world(): World { return this.world_ || new World(this.seed, this.day) }
+  get world(): World { return this.world_ || new World(this.seed!) }
   queue: DoSomething[] = []
   animates: (() => void)[] = []
   touchStart: { x: number, y: number } | null = null
   touchMove: { x: number, y: number } | null = null
   clock = new THREE.Clock(true)
   items: Map<number, () => void> = new Map<number, () => void>()
-  seed: number
-  day: number
+  seed: W.WSrc | null = null
   simpleMsg = document.getElementById("msg")!
   domMsg = document.getElementById("domMsg")!
   simpleMsgT = 0
@@ -194,8 +193,9 @@ class Main {
     this.renderer.setSize(w, h)
     this.renderer.setPixelRatio(2);
   }
-  initWorld() {
-    this.world_ = new World(this.seed, this.day);
+  initWorld(seed: W.WSrc) {
+    this.seed = seed
+    this.world_ = new World(this.seed!);
     this.initMap();
     this.world.onItem = (i: W.itemLocType) => { this.onItem(i) }
     this.world.onGoal = (gi: W.GoalInfo) => this.onGoal(gi)
@@ -203,10 +203,9 @@ class Main {
     this.camera.updateProjectionMatrix()
     this.walk(() => false);
   }
-  constructor(seed: number, day: number) {
-    this.seed = seed
-    this.day = day
+  constructor() {
     this.adaptToWindowSize()
+    this.scene.clear()
     document.body.appendChild(this.renderer.domElement)
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight
@@ -256,6 +255,8 @@ class Main {
   goToTitle() {
     setStyle("title", "display", "flex");
     setStyle("game", "display", "none");
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 1000)
   }
   showDom(msg: HTMLElement) {
     while (this.domMsg.firstChild) {
@@ -682,15 +683,18 @@ window.onload = () => {
     }
   };
   {
-    const main = new Main(seed, day);
-    setEvent("startGame", () => {
+    const main = new Main();
+    main.animate();
+    const startGame = (src: W.WSrc) => {
       setStyle("title", "display", "none");
       setStyle("msg", "opacity", "0");
       setStyle("msg", "display", "block");
       setStyle("game", "display", "block");
       setStyle("domMsg", "display", "none");
-      main.initWorld();
-      main.animate();
+      main.initWorld(src);
+    }
+    setEvent("startGame", () => {
+      startGame({ seed: seed, day: day, t: "REAL" });
     })
   }
   setEvent("closeItemList", () => {

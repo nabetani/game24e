@@ -98,12 +98,12 @@ class Builder {
   rng: Rng
   itemSelector: ItemSelector
 
-  constructor(size: xyz, seed: number) {
+  constructor(size: xyz, seed: WSrc) {
     this.size = size
     this.walls = [...range(0, size.x * size.y * size.z)].map(() => (0 as wall))
-    this.rng = new Rng(Rng.genSeed(seed))
+    this.rng = new Rng(Rng.genSeed(seed.seed))
     this.reachables = new Set<number>()
-    this.itemSelector = new ItemSelector(seed * 23 + 29)
+    this.itemSelector = new ItemSelector(seed.seed * 23 + 29)
   }
   posToIx(pos: xyz): number | null {
     return posToIx(pos, this.size)
@@ -343,7 +343,7 @@ const currentStocks = (day: number): WS.CurrentStocks => {
 }
 
 
-const build = (seed: number): { walls: wall[], ws: xyz, items: itemLocType[] } => {
+const build = (seed: WSrc): { walls: wall[], ws: xyz, items: itemLocType[] } => {
   const wsbase = 9
   const b = new Builder({ x: wsbase, y: wsbase, z: wsbase }, seed)
   b.build()
@@ -351,6 +351,15 @@ const build = (seed: number): { walls: wall[], ws: xyz, items: itemLocType[] } =
     walls: b.walls, ws: b.size, items: b.items()
   }
 }
+
+export type WType = "T0" | "T1" | "REAL"
+
+export type WSrc = {
+  seed: number,
+  day: number,
+  t: WType,
+}
+
 export class World {
   walls: wall[]
   worldSize: xyz
@@ -363,11 +372,11 @@ export class World {
   onGoal: (gi: GoalInfo) => void = () => { }
   itemsInBag = new Set<number>()
   itemsInStock = new Set<number>()
-  day: number
+  seed: WSrc
 
-  constructor(seed: number, day: number) {
-    this.day = day
-    const cs = currentStocks(day)
+  constructor(seed: WSrc) {
+    this.seed = seed
+    const cs = currentStocks(this.seed.day)
     for (const id of cs.stocks) {
       this.itemsInStock.add(id)
     }
@@ -452,7 +461,7 @@ export class World {
     if (i != null) { this.onItem(i) }
     if (isSameXyz(this.pos, { x: 0, y: 0, z: 0 })) {
       if (this.hasTights()) {
-        const cs = currentStocks(this.day)
+        const cs = currentStocks(this.seed.day)
         const gi: GoalInfo = { newItems: [...this.itemsInBag.keys()] }
         const itemCounts = WS.itemCounts.value
         for (const id of this.itemsInBag.keys()) {
