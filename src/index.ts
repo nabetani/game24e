@@ -173,14 +173,14 @@ class Main {
   tloader = new THREE.TextureLoader()
   stats = new Stats();
   world_: World | null = null
-  get world(): World { return this.world_ || new World(this.seed!) }
+  get world(): World { return this.world_ || new World(this.src!) }
   queue: DoSomething[] = []
   animates: (() => void)[] = []
   touchStart: { x: number, y: number } | null = null
   touchMove: { x: number, y: number } | null = null
   clock = new THREE.Clock(true)
   items: Map<number, () => void> = new Map<number, () => void>()
-  seed: W.WSrc | null = null
+  src: W.WSrc | null = null
   simpleMsg = document.getElementById("msg")!
   domMsg = document.getElementById("domMsg")!
   simpleMsgT = 0
@@ -193,9 +193,9 @@ class Main {
     this.renderer.setSize(w, h)
     this.renderer.setPixelRatio(2);
   }
-  initWorld(seed: W.WSrc) {
-    this.seed = seed
-    this.world_ = new World(this.seed!);
+  initWorld(src: W.WSrc) {
+    this.src = src
+    this.world_ = new World(this.src!);
     this.initMap();
     this.world.onItem = (i: W.itemLocType) => { this.onItem(i) }
     this.world.onGoal = (gi: W.GoalInfo) => this.onGoal(gi)
