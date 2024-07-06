@@ -97,13 +97,15 @@ class Builder {
   reachables: Set<number>
   rng: Rng
   itemSelector: ItemSelector
+  src: WSrc
 
-  constructor(size: xyz, seed: WSrc) {
+  constructor(size: xyz, src: WSrc) {
     this.size = size
+    this.src = src
     this.walls = [...range(0, size.x * size.y * size.z)].map(() => (0 as wall))
-    this.rng = new Rng(Rng.genSeed(seed.seed))
+    this.rng = new Rng(Rng.genSeed(src.seed))
     this.reachables = new Set<number>()
-    this.itemSelector = new ItemSelector(seed.seed * 23 + 29)
+    this.itemSelector = new ItemSelector(src.seed * 23 + 29)
   }
   posToIx(pos: xyz): number | null {
     return posToIx(pos, this.size)
@@ -265,9 +267,11 @@ class Builder {
     for (const a of range(0, 3)) {
       this.makePath({ x: 0, y: 0, z: 0 }, this.farPos(a))
     }
-    rep(4, () => this.makeRing())
+    const ring = { "T1": 2, "T2": 3, "REAL": 4 }[this.src.t]
+    rep(ring, () => this.makeRing())
     this.centerRoom()
-    rep(6, () => this.dig())
+    const dig = { "T1": 2, "T2": 4, "REAL": 6 }[this.src.t]
+    rep(dig, () => this.dig())
     // this.reachables.forEach(e => {
     //     console.log(this.ixToPos(e))
     // })
@@ -318,9 +322,9 @@ class Builder {
       }
     }
   }
-  items(): itemLocType[] {
+  items(ty: WType): itemLocType[] {
     const r: itemLocType[] = []
-    const ids = this.rng.shuffle([World.goalID, ...this.itemSelector.getIDs(2)])
+    const ids = ty === "REAL" ? this.rng.shuffle([World.goalID, ...this.itemSelector.getIDs(2)]) : [World.goalID]
     const s = [{ x: 0, y: 0, z: 0 }]
     for (const id of ids) {
       const p = this.farthest(s)
@@ -343,16 +347,16 @@ const currentStocks = (day: number): WS.CurrentStocks => {
 }
 
 
-const build = (seed: WSrc): { walls: wall[], ws: xyz, items: itemLocType[] } => {
-  const wsbase = 9
-  const b = new Builder({ x: wsbase, y: wsbase, z: wsbase }, seed)
+const build = (src: WSrc): { walls: wall[], ws: xyz, items: itemLocType[] } => {
+  const wsbase = { "T1": 6, "T2": 7, "REAL": 9 }[src.t]
+  const b = new Builder({ x: wsbase, y: wsbase, z: wsbase }, src)
   b.build()
   return {
-    walls: b.walls, ws: b.size, items: b.items()
+    walls: b.walls, ws: b.size, items: b.items(src.t)
   }
 }
 
-export type WType = "T0" | "T1" | "REAL"
+export type WType = "T1" | "T2" | "REAL"
 
 export type WSrc = {
   seed: number,
@@ -402,12 +406,17 @@ export class World {
   addToBag(id: number) {
     this.itemsInBag.add(id)
   }
-  itemStates(): { g: ("stock" | "bag" | null), stock: number, bag: number } {
+  itemStates(): { g: ("stock" | "bag" | "?"), stock: number, bag: number, total: number } {
     const gs = this.itemsInStock.has(World.goalID)
     const gb = this.itemsInBag.has(World.goalID)
     const sc = this.itemsInStock.size - (gs ? 1 : 0)
     const bc = this.itemsInBag.size - (gb ? 1 : 0)
-    return { g: (gs ? "stock" : (gb ? "bag" : null)), stock: sc, bag: bc }
+    return {
+      g: (gs ? "stock" : (gb ? "bag" : "?")),
+      stock: sc,
+      bag: bc,
+      total: this.seed.t == "REAL" ? 2 : 0
+    }
   }
 
   turnY(d: number): boolean {

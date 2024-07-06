@@ -492,9 +492,10 @@ class Main {
       document.getElementById("tsign")!,
       document.getElementById("isign0")!,
       document.getElementById("isign1")!]
-    const item = (n: number): ("stock" | "bag" | null) => {
+    const item = (n: number): ("stock" | "bag" | "?" | null) => {
       if (n < s.stock) { return "stock" }
       if (n - s.stock < s.bag) { return "bag" }
+      if (n < s.total) { return "?" }
       return null
     }
     const iss = [s.g, item(0), item(1)];
@@ -503,7 +504,7 @@ class Main {
       const dom = doms[ix]
       const is = iss[ix]
       dom.style.borderStyle = is == "stock" ? "solid" : "dotted"
-      dom.style.opacity = is == null ? "0.3" : "1"
+      dom.style.opacity = is == null ? "0" : (is == "?" ? "0.3" : "1")
     }
   }
 
@@ -696,6 +697,13 @@ window.onload = () => {
     setEvent("startGame", () => {
       startGame({ seed: seed, day: day, t: "REAL" });
     })
+    const startTutorial = (t: "T1" | "T2") => {
+      const tseed = Math.floor(Math.random() * 2 ** 30)
+      const tday = -Math.floor(Math.random() * 2 ** 30)
+      startGame({ seed: tseed, day: tday, t: t });
+    }
+    setEvent("tutorial1", () => startTutorial("T1"))
+    setEvent("tutorial2", () => startTutorial("T2"))
   }
   setEvent("closeItemList", () => {
     setStyle("menu", "display", "block");
