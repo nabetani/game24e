@@ -202,6 +202,20 @@ class Main {
     this.updateItemState();
     this.camera.updateProjectionMatrix()
     this.walk(() => false);
+    this.openingMessage()
+  }
+  openingMessage() {
+    switch (this.src!.t) {
+      case "REAL":
+        {
+          const s = this.world.itemStates()
+          this.showMsg(`魔法のタイツ: ${s.g == "stock" ? "入手済み" : "未入手"}\n未回収アイテム: ${2 - s.stock} 個`)
+        }
+        break
+      case "T1":
+      case "T2":
+        this.showMsg("ここは練習ステージです。\nタイツはありますがアイテムはありません。")
+    }
   }
   constructor() {
     this.adaptToWindowSize()
