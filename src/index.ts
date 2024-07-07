@@ -236,6 +236,7 @@ class Main {
   tGoal(gi: W.GoalInfo) {
     const msg = domItem("div", gi.newItems.includes(World.goalID) ? "タイツとともに帰還成功!" : "生還!");
     msg.appendChild(domItem("br"))
+    msg.appendChild(domItem("div", `このダンジョンの歩数: ${this.world.walkCount} 歩`))
     const ul = domItem("ul")
     let lineCount = 0
     for (const id of gi.newItems) {
@@ -325,6 +326,7 @@ class Main {
     const animate = proc()
     const cp1 = structuredClone(this.world.camPose)
     this.writePos("YourPos", this.world.pos)
+    console.log({ walkCount: this.world.walkCount })
     let now: null | number = null
     const t = animate ? 0.3 : 1 / 1000
     this.queue.push(() => {

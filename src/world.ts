@@ -376,11 +376,24 @@ export class World {
   onGoal: (gi: GoalInfo) => void = () => { }
   itemsInBag = new Set<number>()
   itemsInStock = new Set<number>()
-  seed: WSrc
+  src: WSrc
+  walkCount: number
+
+  static initialWalkCount(src: WSrc): number {
+    if (src.t !== "REAL") {
+      return 0
+    }
+    const wc = WS.walkCount.value
+    if (wc.day === src.day) {
+      return wc.c
+    }
+    return 0
+  }
 
   constructor(seed: WSrc) {
-    this.seed = seed
-    const cs = currentStocks(this.seed.day)
+    this.src = seed
+    this.walkCount = World.initialWalkCount(this.src)
+    const cs = currentStocks(this.src.day)
     for (const id of cs.stocks) {
       this.itemsInStock.add(id)
     }
@@ -415,7 +428,7 @@ export class World {
       g: (gs ? "stock" : (gb ? "bag" : "?")),
       stock: sc,
       bag: bc,
-      total: this.seed.t == "REAL" ? 2 : 0
+      total: this.src.t == "REAL" ? 2 : 0
     }
   }
 
@@ -465,12 +478,13 @@ export class World {
       }
     })()
     if (wallExists) { return false }
+    this.incWalkCount()
     this.pos = dest
     const i = this.items.find((i) => isSameXyz(i.p, this.pos))
     if (i != null) { this.onItem(i) }
     if (isSameXyz(this.pos, { x: 0, y: 0, z: 0 })) {
       if (this.hasTights()) {
-        const cs = currentStocks(this.seed.day)
+        const cs = currentStocks(this.src.day)
         const gi: GoalInfo = { newItems: [...this.itemsInBag.keys()] }
         const itemCounts = WS.itemCounts.value
         for (const id of this.itemsInBag.keys()) {
@@ -488,6 +502,14 @@ export class World {
     }
     return true
   }
+  incWalkCount() {
+    ++this.walkCount;
+    if (this.src.t !== "REAL") {
+      return
+    }
+    WS.walkCount.write({ day: this.src.day, c: this.walkCount })
+  }
+
   posToIx(pos: xyz): number | null {
     return posToIx(pos, this.size)
   }

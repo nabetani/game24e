@@ -34,6 +34,10 @@ class WSItem<T> {
 
 export const soundOn = new WSItem<boolean>("soundOn", false)
 
+export type WalkCount = { day: number, c: number }
+
+export const walkCount = new WSItem<WalkCount>("walkCount", { day: -1, c: 0 })
+
 export type CurrentStocks = {
   day: number,
   stocks: number[]
