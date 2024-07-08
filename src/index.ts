@@ -49,49 +49,34 @@ const drawF = (
   }
 }
 
-const labToRgb = (l: number, a: number, b: number): string => {
-  const xn = 0.95
-  const yn = 1
-  const zn = 1.089
-  const sig = 6 / 29
-  const fi = (t: number) => (t < sig ? (3 * sig ** 2 * (t - 4 / 29)) : t ** 3)
-  const x = xn * fi((l + 16) / 116 + a / 500)
-  const y = yn * fi((l + 16) / 116)
-  const z = zn * fi((l + 16) / 116 + b / 500)
-
-  const cs = (x: number) => x < 0.0031308 ? 12.19 * x : (
-    1.055 * x ** (1 / 2.4) - 0.055
-  )
-  const sr = cs(+3.2406 * x - 1.5372 * y - 0.4986 * z)
-  const sg = cs(-0.9689 * x + 1.8758 * y + 0.0415 * z)
-  const sb = cs(+0.0557 * x - 0.2040 * y + 1.0570 * z)
-  const col = (x: number): string => {
-    const v0 = Math.round(x * 255)
-    const v = v0 < 0 ? 0 : (v0 < 255 ? v0 : 255)
-    return `${(v >> 4).toString(16)}${(v & 15).toString(16)}`
-  }
-  return `#${col(sr)}${col(sg)}${col(sb)}`
-}
-
 const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: number, fa: number) => {
-  const col = (l: number, sa: number, co: number): string => {
-    const t = co * Math.PI / 180
+  const col = (l: number, sa: number, ax_: number): string => {
+    const t = (ax_ + 0.6) * Math.PI * 2 / 3
     const a = sa * Math.sin(t)
     const b = sa * Math.cos(t)
-    return labToRgb(l, a, b)
+    return `lab(${l}% ${a} ${b})`
+
+
   }
   const baseCol = ctx.createLinearGradient(0, 0, cw, cw);
-  baseCol.addColorStop(0, col(80, 50, ax * 120))
-  baseCol.addColorStop(1, col(30, 100, ax * 120))
+  baseCol.addColorStop(0, col(40, 25, ax))
+  baseCol.addColorStop(1, col(2, 25, ax))
   ctx.fillStyle = baseCol;
   const g = 0
   ctx.fillRect(g, g, cw - g * 2, cw - g * 2)
   const markCol = ctx.createLinearGradient(0, cw, cw, 0);
-  const dcol = 90
-  markCol.addColorStop(0, col(10, 100, ax * 120 + 180 + dcol))
-  markCol.addColorStop(1, col(10, 20, ax * 120 + 180 - dcol))
+  const dcol = 0.3
+  markCol.addColorStop(0, col(2, 20, ax + dcol))
+  markCol.addColorStop(1, col(2, 20, ax - dcol))
   ctx.fillStyle = markCol
   drawF(f + 1 - fa, cw / 2, cw / 2, cw * 0.4, Math.PI * 0, (x: number, y: number, r: number, th: number) => {
+    ctx.save()
+    if (fa !== 0) {
+      const region = new Path2D();
+      region.arc(x, y, r / 5, 0, Math.PI * 2);
+      region.rect(0, 0, cw, cw)
+      ctx.clip(region, "evenodd")
+    }
     switch (ax) {
       case 0:
         {
@@ -103,41 +88,41 @@ const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: numb
         break
       case 1:
         {
-          ctx.beginPath()
-          const d0 = Math.PI / 5
-          const d1 = Math.PI * 2 - d0
-          const [r0, r1] = [r * 0.8, r * 0.7]
-          ctx.ellipse(x, y, r0, r0, th, d0, d1)
-          ctx.ellipse(x, y, r1, r1, th, d1, d0, true)
-          ctx.fill()
+          ctx.beginPath();
+          const path = new Path2D();
+          for (const i of range(0, 5)) {
+            const t = i * Math.PI * 4 / 5 - th
+            const [xx, yy] = [x + r * Math.cos(t), y + r * Math.sin(t)]
+            if (i == 0) {
+              path.moveTo(xx, yy)
+            } else {
+              path.lineTo(xx, yy)
+            }
+          }
+          ctx.fill(path, "nonzero")
         }
         break
       case 2:
         {
-          ctx.save()
-          rotataCtx(ctx, th, x, y)
+          rotataCtx(ctx, th + Math.PI / 4, x, y)
           ctx.beginPath()
           ctx.lineWidth = r / 10
-          const [rx, ry] = [r * 0.8, r * 0.5]
+          const [rx, ry] = [r * 0.8, r * 0.2]
           ctx.roundRect(x - rx, y - ry, rx * 2, ry * 2, r / 5)
-          ctx.stroke()
-          ctx.restore()
+          rotataCtx(ctx, Math.PI / 2, x, y)
+          ctx.roundRect(x - rx, y - ry, rx * 2, ry * 2, r / 5)
+          ctx.fill()
         }
         break
     }
+    ctx.restore()
   })
   {
     ctx.save()
     const rnd = (e: number): number => {
       return e * Math.random()
     }
-    if (fa != 0) {
-      ctx.translate(cw / 2, cw / 2)
-      ctx.rotate(Math.PI / 8)
-      ctx.scale(1.4, 1.4)
-      ctx.translate(-cw / 2, -cw / 2)
-    }
-    const n = fa == 0 ? 15 : 8
+    const n = 8
     const g = 0.1
     const h = cw / n * (1 - g * 2)
     const xa = cw / 8
@@ -147,7 +132,7 @@ const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: numb
       while (x0 < cw) {
         const x1 = x0 + xa * (rnd(0.5) + 0.75)
         ctx.beginPath()
-        ctx.fillStyle = Math.random() < 0.5 ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+        ctx.fillStyle = Math.random() < 0.5 ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.2)"
         ctx.roundRect(x0, y, x1 - x0, h, h / 5)
         ctx.fill()
         x0 = x1 + rnd(cw / n * g)
