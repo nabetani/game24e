@@ -313,7 +313,7 @@ class Main {
       `${[
         extMsg,
         `歩数 ${walkCount}`,
-        "#3Dタイツダンジョン",
+        "#タイツダンジョン",
         "https://nabetani.sakura.ne.jp/game24e/",
       ].join("\n")}`
     ));
