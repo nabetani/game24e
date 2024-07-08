@@ -348,7 +348,7 @@ const currentStocks = (day: number): WS.CurrentStocks => {
 
 
 const build = (src: WSrc): { walls: wall[], ws: xyz, items: itemLocType[] } => {
-  const wsbase = { "T1": 6, "T2": 7, "REAL": 9 }[src.t]
+  const wsbase = 6;//{ "T1": 6, "T2": 7, "REAL": 9 }[src.t]
   const b = new Builder({ x: wsbase, y: wsbase, z: wsbase }, src)
   b.build()
   return {

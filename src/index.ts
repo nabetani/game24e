@@ -236,25 +236,25 @@ class Main {
   tGoal(gi: W.GoalInfo) {
     const msg = domItem("div", gi.newItems.includes(World.goalID) ? "タイツとともに帰還成功!" : "生還!");
     msg.appendChild(domItem("br"))
-    msg.appendChild(domItem("div", `このダンジョンの歩数: ${this.world.walkCount} 歩`))
-    const ul = domItem("ul")
+    msg.appendChild(domItem("div", `このダンジョンを: ${this.world.walkCount} 歩 彷徨った`))
+    const ul = domItem("div")
     let lineCount = 0
     for (const id of gi.newItems) {
       if (id == World.goalID) { continue }
       ++lineCount
       const i = itemInfo(id)
       const stars = "★".repeat(i.rarity)
-      const li = domItem("li", i.uname)
       const dl = domItem("dl")
+      dl.appendChild(domItem("dt", "入手時"))
+      dl.appendChild(domItem("dd", i.uname))
       dl.appendChild(domItem("dt", "正体"))
       dl.appendChild(domItem("dd", i.name))
       dl.appendChild(domItem("dt", "希少性"))
       dl.appendChild(domItem("dd", stars))
-      li.appendChild(dl)
-      ul.appendChild(li)
+      ul.appendChild(dl)
     }
     if (0 < lineCount) {
-      msg.appendChild(domItem("div", "入手アイテムを調べてもらった"))
+      msg.appendChild(domItem("div", "入手アイテムの正体"))
       msg.appendChild(ul)
     }
     this.showDom(msg)
@@ -273,6 +273,14 @@ class Main {
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 1000)
   }
+  taiitsu(text: string) {
+    const encoded = encodeURIComponent(text);
+    const url = "https://taittsuu.com/share?text=" + encoded;
+    if (!window.open(url)) {
+      location.href = url;
+    }
+  }
+
   showDom(msg: HTMLElement) {
     while (this.domMsg.firstChild) {
       this.domMsg.removeChild(this.domMsg.firstChild);
@@ -280,11 +288,35 @@ class Main {
     this.domMsg.appendChild(msg)
     const appendBtn = (name: string, proc: () => void) => {
       const b = domItem("button", name)
+      b.classList.add("ingame");
       b.onclick = proc
       b.ontouchend = proc
       this.domMsg.appendChild(b)
     }
     appendBtn("OK", () => this.domMsg.style.display = "none");
+    const walkCount = this.world.walkCount
+    const itemStates = this.world.itemStates();
+    const extMsg = ((): string => {
+      switch (this.src!.t) {
+        case 'REAL':
+          return `第${this.src!.day} ダンジョン / 獲得アイテム ${itemStates.stock} 個`
+        case 'T1':
+          return "練習ダンジョン1"
+        case 'T2':
+          return "練習ダンジョン2"
+        default:
+          console.log("logic error")
+          return "??"
+      }
+    })()
+    appendBtn("タイーツ", () => this.taiitsu(
+      `${[
+        extMsg,
+        `歩数 ${walkCount}`,
+        "#3Dタイツダンジョン",
+        "https://nabetani.sakura.ne.jp/game24e/",
+      ].join("\n")}`
+    ));
     appendBtn("Go to title", () => this.goToTitle());
     this.domMsg.style.display = "block";
     this.domMsg.style.opacity = "1"
@@ -688,9 +720,9 @@ const setStyle = (id: string, attr: string, value: string) => {
 window.onload = () => {
   onReize()
   const t = new Date().getTime();
-  const t0 = new Date('2024-01-01T00:00:00+09:00').getTime();
+  const t0 = new Date('2024-07-07T00:00:00+09:00').getTime();
   // const t0 = new Date('2024-06-01T20:48:00+09:00').getTime();
-  const day = Math.floor((t - t0) / (24 * 60 * 60 * 1000));
+  const day = 103 + Math.floor((t - t0) / (24 * 60 * 60 * 1000));
   const seed = (day * 101) ^ 0x55
   console.log({ seed: seed });
   const setEvent = (id: string, proc: () => void) => {

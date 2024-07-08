@@ -67,6 +67,10 @@
       display: none;
     }
 
+    dl {
+      padding-top: calc(var(--sizeUnit) * 0.7);
+    }
+
     button {
       margin: var(--sizeUnit);
       padding: var(--sizeUnit);
@@ -76,11 +80,15 @@
       font-size: calc(var(--sizeUnit) * 3);
     }
 
+    button.ingame {
+      padding: calc(var(--sizeUnit) * 0.3);
+      font-size: calc(var(--sizeUnit) * 2);
+    }
+
     button.large {
       font-size: calc(var(--sizeUnit) * 5);
       padding-left: calc(var(--sizeUnit) * 2);
       padding-right: calc(var(--sizeUnit) * 2);
-
     }
 
     div.bottom {
@@ -224,6 +232,7 @@
       background-color: #F3F3F3;
       margin: calc(var(--sizeUnit)*0.2);
       padding: calc(var(--sizeUnit)*0.2);
+      text-align: left;
     }
 
     td,
