@@ -51,7 +51,7 @@ const drawF = (
 
 const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: number, fa: number) => {
   const col = (l: number, sa: number, ax_: number): string => {
-    const t = (ax_ + 0.6) * Math.PI * 2 / 3
+    const t = (1.6 - ax_) * Math.PI * 2 / 3
     const a = sa * Math.sin(t)
     const b = sa * Math.cos(t)
     return `lab(${l}% ${a} ${b})`
