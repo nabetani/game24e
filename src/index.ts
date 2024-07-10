@@ -55,8 +55,6 @@ const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: numb
     const a = sa * Math.sin(t)
     const b = sa * Math.cos(t)
     return `lab(${l}% ${a} ${b})`
-
-
   }
   const baseCol = ctx.createLinearGradient(0, 0, cw, cw);
   baseCol.addColorStop(0, col(40, 25, ax))
@@ -122,20 +120,30 @@ const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: numb
     const rnd = (e: number): number => {
       return e * Math.random()
     }
-    const n = 8
-    const g = 0.1
-    const h = cw / n * (1 - g * 2)
+    const fs = (): string => {
+      const r = f * 20
+      const th = Math.random() * Math.PI * 2
+      const a = r * Math.sin(th)
+      const b = r * Math.cos(th)
+      const o = f * 0.04
+      return `lab(${40}% ${a} ${b} / ${o})`
+    }
+
+    const n = 5 + f
+    const g = cw / n * 0.1
+    const h = cw / n - g
     const xa = cw / 8
     for (const iy of range(0, n)) {
-      const y = (iy + g) / n * cw
+      const yc = (iy + 0.5) / n * cw
       let x0 = -rnd(xa)
       while (x0 < cw) {
-        const x1 = x0 + xa * (rnd(0.5) + 0.75)
+        const w = xa * (rnd(0.5) + 0.75)
+        const xc = x0 + w / 2
         ctx.beginPath()
-        ctx.fillStyle = Math.random() < 0.5 ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.2)"
-        ctx.roundRect(x0, y, x1 - x0, h, h / 5)
+        ctx.fillStyle = fs();
+        ctx.roundRect(xc - w / 2, yc - h / 2, w, h)
         ctx.fill()
-        x0 = x1 + rnd(cw / n * g)
+        x0 += w + g
       }
     }
     ctx.restore()
