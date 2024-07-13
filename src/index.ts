@@ -159,6 +159,8 @@ const newCanvas = (cw: number): HTMLCanvasElement => {
   return canvas
 }
 
+type actionValues = "" | "hturn" | "vturn" | "forward";
+
 class Main {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 1000)
@@ -177,6 +179,8 @@ class Main {
   simpleMsg = document.getElementById("msg")!
   domMsg = document.getElementById("domMsg")!
   simpleMsgT = 0
+  tutorialMessageTimerID: number = 0
+  actions: Set<actionValues> = new Set<actionValues>();
 
   adaptToWindowSize() {
     const w = window.innerWidth
@@ -194,8 +198,9 @@ class Main {
     this.world.onGoal = (gi: W.GoalInfo) => this.onGoal(gi)
     this.updateItemState();
     this.camera.updateProjectionMatrix()
-    this.walk(() => false);
+    this.walk("", () => false);
     this.openingMessage()
+    this.tutorialMessageTimerID = window.setTimeout(() => this.showHowToTurnHorz(), 5000);
   }
   openingMessage() {
     switch (this.src!.t) {
@@ -264,6 +269,10 @@ class Main {
     setStyle("title", "display", "flex");
     setStyle("game", "display", "none");
     this.scene = new THREE.Scene();
+    if (0 < this.tutorialMessageTimerID) {
+      clearTimeout(this.tutorialMessageTimerID);
+      this.tutorialMessageTimerID = 0;
+    }
     this.world_ = null;
     this.camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 1000)
   }
@@ -344,12 +353,15 @@ class Main {
       }
     }
   }
-  walk(proc: () => boolean) {
+  walk(a: actionValues, proc: () => boolean) {
     if (1 < this.queue.length) {
       return
     }
     const cp0 = structuredClone(this.world.camPose)
     const animate = proc()
+    if (animate) {
+      this.actions.add(a);
+    }
     const cp1 = structuredClone(this.world.camPose)
     this.writePos("YourPos", this.world.pos)
     console.log({ walkCount: this.world.walkCount })
@@ -373,13 +385,13 @@ class Main {
   setInputEvents() {
     const p = window;
     const move = () => {
-      this.walk(() => this.world.move())
+      this.walk("forward", () => this.world.move())
     };
     const turnY = (x: number) => {
-      this.walk(() => this.world.turnY(x))
+      this.walk("hturn", () => this.world.turnY(x))
     };
     const turnZ = (x: number) => {
-      this.walk(() => this.world.turnZ(x))
+      this.walk("vturn", () => this.world.turnZ(x))
     };
     p.addEventListener('touchstart', (e) => {
       if (null == this.world_) { return; }
@@ -532,6 +544,26 @@ class Main {
         this.updateItemState()
       }
     })
+  }
+  showHowTo(proc: () => void, a: actionValues, text: string) {
+    if (this.actions.has(a)) {
+      proc();
+    } else {
+      this.showMsg(text);
+      this.tutorialMessageTimerID = window.setTimeout(proc, 5000);
+    }
+  }
+  showHowToTurnHorz() {
+    this.showHowTo(() => this.showHowToTurnVert(), "hturn",
+      "左右にフリックまたは左右カーソルキーで\n左右に向きを変えます。");
+  }
+  showHowToTurnVert() {
+    this.showHowTo(() => this.showHowToMoveForward(), "vturn",
+      "上下にフリックまたは上下カーソルキーで\n上下に向きを変えます。");
+  }
+  showHowToMoveForward() {
+    this.showHowTo(() => { }, "forward",
+      "タップまたはスペースキーで\n前進します。");
   }
   updateItemState() {
     this.writePos("TPos", this.world.tpos)
@@ -719,7 +751,7 @@ const setStyle = (id: string, attr: string, value: string) => {
 
 const dayNum = (): number => {
   const t = new Date().getTime();
-  const t0 = new Date('2024-07-07T00:00:00+09:00').getTime();
+  const t0 = new Date('2024-07-13T00:00:00+09:00').getTime();
   // const t0 = new Date('2024-06-01T20:48:00+09:00').getTime();
   return Math.floor((t - t0) / (24 * 60 * 60 * 1000));
 }
