@@ -240,6 +240,16 @@
       background-color: white;
     }
 
+    div#howToText {
+      text-align: left;
+      margin-left: auto;
+      margin-right: auto;
+      width: calc(var(--sizeUnit)*50);
+      max-height: calc(var(--sizeUnit)*40);
+      height: calc(var(--sizeUnit)*50);
+      overflow: scroll;
+    }
+
     div#itemTableBox {
       margin-left: auto;
       margin-right: auto;
@@ -308,12 +318,12 @@
     <img class="fill" id="title-img" src="assets/title.webp" />
     <div class="start" id="start">
       <div id="menu">
-        <button>ルール説明</button>
+        <button id="howToBtn">遊び方</button>
         <br />
-        <button id="tutorial1">練習1</button>
-        <button id="tutorial2">練習2</button>
+        <button id="tutorial1">練習 (小)</button>
+        <button id="tutorial2">練習 (中)</button>
         <br />
-        <button id="startGame" class="large">Start</button>
+        <button id="startGame" class="large">実戦ダンジョン</button>
         <br />
         <button id="itemListBtn">手に入れたもの</button>
       </div>
@@ -334,6 +344,35 @@
           </table>
         </div>
         <button id="closeItemList">OK</button>
+      </div>
+      <div id="howTo" style="display: none;">
+        <div id="howToText">
+          <h2>遊び方</h2>
+          <h3>クリア条件</h3>
+          <p>
+            ダンジョン内にある魔法のタイツを手に入れたうえでスタート地点まで戻ればクリアです。<br />
+          </p>
+          <h3>練習ダンジョン</h3>
+          <p>
+            練習ダンジョンは、規模が小さく、タイツ以外のアイテムはありません。
+            <br />
+            ボタンを押すたびに毎回異なるダンジョンになります。
+          </p>
+          <h3>実戦ダンジョン</h3>
+          <p>
+            実戦ダンジョンは日替わりです。ボタンを押した時点の日本時間の日付でダンジョンが決まります。
+            <br />
+            タイツの他にアイテムが二個あります。
+            <br />
+            その日の魔法のタイツが入手済みの状態でアイテムを持ってスタート地点に戻るとアイテムが自分のものになります。
+            <br />
+            集めたアイテムはメニュー画面の「手に入れたもの」ボタンで確認できます。
+          </p>
+
+
+          </p>
+        </div>
+        <button id="closeHowTo">OK</button>
       </div>
     </div>
     <div class="bottom" id="bottom">

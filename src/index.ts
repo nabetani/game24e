@@ -710,14 +710,17 @@ const setStyle = (id: string, attr: string, value: string) => {
   o.style.setProperty(attr, value)
 }
 
-window.onload = () => {
-  onReize()
+const dayNum = (): number => {
   const t = new Date().getTime();
   const t0 = new Date('2024-07-07T00:00:00+09:00').getTime();
   // const t0 = new Date('2024-06-01T20:48:00+09:00').getTime();
-  const day = 103 + Math.floor((t - t0) / (24 * 60 * 60 * 1000));
-  const seed = (day * 101) ^ 0x55
-  console.log({ seed: seed });
+  return Math.floor((t - t0) / (24 * 60 * 60 * 1000));
+}
+
+const seedNum = (): number => (dayNum() * 1367) ^ 2731
+
+window.onload = () => {
+  onReize()
   const setEvent = (id: string, proc: () => void) => {
     const o = document.getElementById(id)
     if (o != null) {
@@ -736,7 +739,7 @@ window.onload = () => {
       main.initWorld(src);
     }
     setEvent("startGame", () => {
-      startGame({ seed: seed, day: day, t: "REAL" });
+      startGame({ seed: seedNum(), day: dayNum(), t: "REAL" });
     })
     const startTutorial = (t: "T1" | "T2") => {
       const tseed = Math.floor(Math.random() * 2 ** 30)
@@ -749,6 +752,14 @@ window.onload = () => {
   setEvent("closeItemList", () => {
     setStyle("menu", "display", "block");
     setStyle("itemList", "display", "none");
+  })
+  setEvent("closeHowTo", () => {
+    setStyle("menu", "display", "block");
+    setStyle("howTo", "display", "none");
+  })
+  setEvent("howToBtn", () => {
+    setStyle("menu", "display", "none");
+    setStyle("howTo", "display", "block");
   })
   setEvent("itemListBtn", () => {
     setStyle("menu", "display", "none");
