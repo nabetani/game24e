@@ -229,7 +229,7 @@ class Main {
   tGoal(gi: W.GoalInfo) {
     const msg = domItem("div", gi.newItems.includes(World.goalID) ? "タイツとともに帰還成功!" : "生還!");
     msg.appendChild(domItem("br"))
-    msg.appendChild(domItem("div", `この迷宮を: ${this.world.walkCount} 歩 彷徨った`))
+    msg.appendChild(domItem("div", `この迷宮を ${this.world.walkCount} 歩 彷徨った`))
     const ul = domItem("div")
     let lineCount = 0
     for (const id of gi.newItems) {
