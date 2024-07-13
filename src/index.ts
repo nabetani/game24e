@@ -166,7 +166,7 @@ class Main {
   tloader = new THREE.TextureLoader()
   stats = new Stats();
   world_: World | null = null
-  get world(): World { return this.world_ || new World(this.src!) }
+  get world(): World { return this.world_! }
   queue: DoSomething[] = []
   animates: (() => void)[] = []
   touchStart: { x: number, y: number } | null = null
@@ -264,6 +264,7 @@ class Main {
     setStyle("title", "display", "flex");
     setStyle("game", "display", "none");
     this.scene = new THREE.Scene();
+    this.world_ = null;
     this.camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 1000)
   }
   taiitsu(text: string) {
@@ -407,6 +408,9 @@ class Main {
     })
 
     p.addEventListener("keydown", (event) => {
+      if (null == this.world_) {
+        return;
+      }
       if (event.code == "ArrowRight") {
         turnY(-1);
         event.preventDefault();
