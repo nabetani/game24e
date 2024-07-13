@@ -248,7 +248,7 @@
       padding: calc(var(--sizeUnit)*1);
       max-height: calc(var(--sizeUnit)*50);
       height: calc(var(--sizeUnit)*50);
-      background-color: rgba(255, 255, 255, 0.1);
+      background-color: rgba(255, 255, 255, 0.6);
       overflow: scroll;
     }
 
@@ -286,6 +286,17 @@
       color: black;
       padding: calc(var(--sizeUnit)*0.5);
     }
+
+    p.a {
+      font-family: "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "游明朝体", "YuMincho", serif;
+      color: darkred;
+    }
+
+    p.b {
+      padding-left: 1em;
+      font-family: "HiraginoSans-W0", "Hiragino Sans", "ヒラギノ角ゴシック", "游ゴシック体", "YuGothic", sans-serif;
+      color: darkgreen;
+    }
   </style>
 </head>
 
@@ -320,12 +331,13 @@
     <img class="fill" id="title-img" src="assets/title.webp" />
     <div class="start" id="start">
       <div id="menu">
+        <button id="storyBtn">物語</button>
         <button id="howToBtn">遊び方</button>
         <br />
         <button id="tutorial1">練習 (小)</button>
         <button id="tutorial2">練習 (中)</button>
         <br />
-        <button id="startGame" class="large">実戦ダンジョン</button>
+        <button id="startGame" class="large">実戦迷宮</button>
         <br />
         <button id="itemListBtn">手に入れたもの</button>
       </div>
@@ -347,22 +359,43 @@
         </div>
         <button id="closeItemList">OK</button>
       </div>
+      <div id="story" style="display: none;">
+        <div class="longText">
+          <h2>物語</h2>
+          <p class="b">あなたですか、立体的な迷宮が得意冒険者を探しているのは。</p>
+          <p class="a">え、あ、はい。立体迷宮を専門としています。戦闘は苦手ですが。</p>
+          <p class="b">おお、あなたのような方を探しておりました。頼みというのは他でもありません。魔法のタイツです。</p>
+          <p class="a">あの、一度入ると魔法のタイツを手に入れるまで決して出られない恐ろしい迷宮ですね。流石にそれは...</p>
+          <p class="b">わかっております。<br />
+            ついに開発に成功したんです。魔法のタイツの場所を特定する魔法を。</p>
+          <p class="a">な、なんと</p>
+          <p class="b">そこで。あなたには魔法のタイツの在処を教えましょう。あなたは迷宮に入り、その場所に行って魔法のタイツを取ってきてくれればよいのです。</p>
+          <p class="a">なるほど...<br />魔物は？</p>
+          <p class="b">私の範囲攻撃魔法で殲滅しました。
+            <br />あとはわかっている場所に行くだけなんですが、あの迷宮はあなたのような方でないとなかなか厳しくて。
+          </p>
+          <p class="a">魔物はおらず、場所もわかっていると。<br />であれば、報酬によってはお受けしましょう。</p>
+          <p class="b">報酬ですか。<br />その迷宮であなたが手に入れた、魔法のタイツ以外のすべての財宝とういのはどうでしょう。<br />
+            悪い話ではありませんよね？</p>
+        </div>
+        <button id="closeStory">OK</button>
+      </div>
       <div id="howTo" style="display: none;">
-        <div id="howToText" class="longText">
+        <div class="longText">
           <h2>遊び方</h2>
           <h3>クリア条件</h3>
           <p>
-            ダンジョン内にある魔法のタイツを手に入れたうえでスタート地点まで戻ればクリアです。<br />
+            迷宮内にある魔法のタイツを手に入れたうえでスタート地点まで戻ればクリアです。<br />
           </p>
-          <h3>練習ダンジョン</h3>
+          <h3>練習迷宮</h3>
           <p>
-            練習ダンジョンは、規模が小さく、タイツ以外のアイテムはありません。
+            練習迷宮は、規模が小さく、タイツ以外のアイテムはありません。
             <br />
-            ボタンを押すたびに毎回異なるダンジョンになります。
+            ボタンを押すたびに毎回異なる迷宮になります。
           </p>
-          <h3>実戦ダンジョン</h3>
+          <h3>実戦迷宮</h3>
           <p>
-            実戦ダンジョンは日替わりです。ボタンを押した時点の日本時間の日付でダンジョンが決まります。
+            実戦迷宮は日替わりです。ボタンを押した時点の日本時間の日付で迷宮の構造と中にあるアイテムが決まります。
             <br />
             タイツの他にアイテムが二個あります。
             <br />
@@ -382,7 +415,7 @@
       <a href="https://taittsuu.com/users/nabetani">鍋谷武典@タイッツー</a>
       <a href="https://github.com/nabetani/game24e">Souce code and Licence</a>
       <button>SUZURI - Nabetani-T</button>
-      <a href="https://taittsuu.com/search/taiitsus/hashtags?query=タイツダンジョン">タイッツー #タイツダンジョン</a>
+      <a href="https://taittsuu.com/search/taiitsus/hashtags?query=魔法のタイツの迷宮">タイッツー #魔法のタイツの迷宮</a>
     </div>
   </div>
 </body>

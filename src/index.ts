@@ -229,7 +229,7 @@ class Main {
   tGoal(gi: W.GoalInfo) {
     const msg = domItem("div", gi.newItems.includes(World.goalID) ? "タイツとともに帰還成功!" : "生還!");
     msg.appendChild(domItem("br"))
-    msg.appendChild(domItem("div", `このダンジョンを: ${this.world.walkCount} 歩 彷徨った`))
+    msg.appendChild(domItem("div", `この迷宮を: ${this.world.walkCount} 歩 彷徨った`))
     const ul = domItem("div")
     let lineCount = 0
     for (const id of gi.newItems) {
@@ -293,11 +293,11 @@ class Main {
     const extMsg = ((): string => {
       switch (this.src!.t) {
         case 'REAL':
-          return `第${this.src!.day} ダンジョン / 獲得アイテム ${itemStates.stock} 個`
+          return `第${this.src!.day} 迷宮 / 獲得アイテム ${itemStates.stock} 個`
         case 'T1':
-          return "練習ダンジョン1"
+          return "練習迷宮 (小)"
         case 'T2':
-          return "練習ダンジョン2"
+          return "練習迷宮 (中)"
         default:
           console.log("logic error")
           return "??"
@@ -307,7 +307,7 @@ class Main {
       `${[
         extMsg,
         `歩数 ${walkCount}`,
-        "#タイツダンジョン",
+        "#魔法のタイツの迷宮",
         "https://nabetani.sakura.ne.jp/game24e/",
       ].join("\n")}`
     ));
@@ -764,6 +764,14 @@ window.onload = () => {
   setEvent("howToBtn", () => {
     setStyle("menu", "display", "none");
     setStyle("howTo", "display", "block");
+  })
+  setEvent("closeStory", () => {
+    setStyle("menu", "display", "block");
+    setStyle("story", "display", "none");
+  })
+  setEvent("storyBtn", () => {
+    setStyle("menu", "display", "none");
+    setStyle("story", "display", "block");
   })
   setEvent("itemListBtn", () => {
     setStyle("menu", "display", "none");
