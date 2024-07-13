@@ -240,13 +240,15 @@
       background-color: white;
     }
 
-    div#howToText {
+    div.longText {
       text-align: left;
       margin-left: auto;
       margin-right: auto;
-      width: calc(var(--sizeUnit)*50);
-      max-height: calc(var(--sizeUnit)*40);
+      width: calc(var(--sizeUnit)*55);
+      padding: calc(var(--sizeUnit)*1);
+      max-height: calc(var(--sizeUnit)*50);
       height: calc(var(--sizeUnit)*50);
+      background-color: rgba(255, 255, 255, 0.1);
       overflow: scroll;
     }
 
@@ -254,8 +256,8 @@
       margin-left: auto;
       margin-right: auto;
       width: calc(var(--sizeUnit)*50);
-      max-height: calc(var(--sizeUnit)*40);
-      height: calc(var(--sizeUnit)*50);
+      max-height: calc(var(--sizeUnit)*45);
+      height: calc(var(--sizeUnit)*45);
       overflow: scroll;
     }
 
@@ -346,7 +348,7 @@
         <button id="closeItemList">OK</button>
       </div>
       <div id="howTo" style="display: none;">
-        <div id="howToText">
+        <div id="howToText" class="longText">
           <h2>遊び方</h2>
           <h3>クリア条件</h3>
           <p>
