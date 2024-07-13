@@ -141,7 +141,7 @@ const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: numb
         const xc = x0 + w / 2
         ctx.beginPath()
         ctx.fillStyle = fs();
-        ctx.roundRect(xc - w / 2, yc - h / 2, w, h)
+        ctx.roundRect(xc - w / 2, yc - h / 2, w, h, h * 0.2)
         ctx.fill()
         x0 += w + g
       }
@@ -382,13 +382,16 @@ class Main {
       this.walk(() => this.world.turnZ(x))
     };
     p.addEventListener('touchstart', (e) => {
+      if (null == this.world_) { return; }
       this.touchStart = { x: e.touches[0].pageX, y: e.touches[0].pageY };
       this.touchMove = null
     })
     p.addEventListener('touchmove', (e) => {
+      if (null == this.world_) { return; }
       this.touchMove = { x: e.changedTouches[0].pageX, y: e.changedTouches[0].pageY };
     })
     p.addEventListener('touchend', (e) => {
+      if (null == this.world_) { return; }
       if (this.touchStart == null) { return }
       if (this.touchMove == null) {
         move()
