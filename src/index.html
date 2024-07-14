@@ -60,7 +60,7 @@
 
     div#start {
       position: absolute;
-      top: calc(var(--sizeUnit) * 20);
+      top: calc(var(--sizeUnit) * 15);
       width: 100svw;
       max-width: 100svw;
       text-align: center;
@@ -72,12 +72,29 @@
     }
 
     button {
-      margin: var(--sizeUnit);
-      padding: var(--sizeUnit);
-      background-color: #eee;
+      background-color: rgba(255, 255, 255, 0.4);
       border-radius: var(--sizeUnit);
+      /* 上右下左 */
+      margin: calc(var(--sizeUnit) * 1) calc(var(--sizeUnit) * 0.6) calc(var(--sizeUnit) * 1) calc(var(--sizeUnit) * 0.6);
+      padding: calc(var(--sizeUnit) * 0.3) calc(var(--sizeUnit) * 2) calc(var(--sizeUnit) * 0.3) calc(var(--sizeUnit) * 2);
       border: solid #888 calc(var(--sizeUnit) * 0.2);
-      font-size: calc(var(--sizeUnit) * 3);
+      font-size: calc(var(--sizeUnit) * 2.4);
+    }
+
+    .closebox button {
+      background-color: rgba(0, 0, 0, 0);
+      border-radius: 0;
+      height: calc(var(--sizeUnit) * 3);
+      width: calc(var(--sizeUnit) * 3);
+      margin: 0;
+      padding: calc(var(--sizeUnit) * 0.2);
+      border: none;
+      font-size: calc(var(--sizeUnit) * 2);
+    }
+
+    .closebox button img {
+      height: calc(var(--sizeUnit) * 2.6);
+      width: calc(var(--sizeUnit) * 2.6);
     }
 
     button.ingame {
@@ -240,14 +257,21 @@
       background-color: white;
     }
 
+    div.closebox {
+      width: calc(var(--sizeUnit)*55);
+      margin-left: auto;
+      margin-right: auto;
+      text-align: right;
+    }
+
     div.longText {
       text-align: left;
       margin-left: auto;
       margin-right: auto;
       width: calc(var(--sizeUnit)*55);
       padding: calc(var(--sizeUnit)*1);
-      max-height: calc(var(--sizeUnit)*50);
-      height: calc(var(--sizeUnit)*50);
+      max-height: calc(var(--sizeUnit)*60);
+      height: calc(var(--sizeUnit)*60);
       background-color: rgba(255, 255, 255, 0.6);
       overflow: scroll;
     }
@@ -288,12 +312,13 @@
     }
 
     p.a {
+      padding-top: 0.7em;
       font-family: "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "游明朝体", "YuMincho", serif;
       color: darkred;
     }
 
     p.b {
-      padding-left: 1em;
+      padding-top: 0.7em;
       font-family: "HiraginoSans-W0", "Hiragino Sans", "ヒラギノ角ゴシック", "游ゴシック体", "YuGothic", sans-serif;
       color: darkgreen;
     }
@@ -334,14 +359,17 @@
         <button id="storyBtn">物語</button>
         <button id="howToBtn">遊び方</button>
         <br />
-        <button id="tutorial1">練習 (小)</button>
-        <button id="tutorial2">練習 (中)</button>
+        <button id="tutorial1">練習迷宮<small> (小)</small></button>
+        <button id="tutorial2">練習迷宮<small> (中)</small></button>
         <br />
         <button id="startGame" class="large">実戦迷宮</button>
         <br />
         <button id="itemListBtn">手に入れたもの</button>
       </div>
       <div id="itemList" style="display: none;">
+        <div class="closebox">
+          <button id="closeItemList"><img src="assets/close.webp"></button>
+        </div>
         <h1>手に入れたもの</h1>
         <div id="itemTableBox">
           <table id="itemTable">
@@ -357,15 +385,17 @@
             </tr>
           </table>
         </div>
-        <button id="closeItemList">OK</button>
       </div>
       <div id="story" style="display: none;">
+        <div class="closebox">
+          <button id="closeStory"><img src="assets/close.webp"></button>
+        </div>
         <div class="longText">
           <h2>物語</h2>
           <p class="b">あなたですか、立体的な迷宮が得意な冒険者というのは。</p>
           <p class="a">え、あ、はい。立体迷宮を専門としています。戦闘は苦手なんで探索専門です。</p>
           <p class="b">おお、あなたのような方を探しておりました。頼みというのは他でもありません。魔法のタイツです。</p>
-          <p class="a">あの、一度入ると魔法のタイツを手に入れるまで決して出られない恐ろしい迷宮ですね。流石にそれは...</p>
+          <p class="a">それって、一度入ると魔法のタイツを手に入れるまで決して出られない恐ろしい迷宮ですね。流石にそれは...</p>
           <p class="b">わかっておりますとも。<br />
             ついに開発に成功したんです。魔法のタイツの場所を特定する魔法を。</p>
           <p class="a">な、なんと</p>
@@ -376,11 +406,18 @@
           <p class="b">報酬ですか。<br />その迷宮であなたが手に入れた、魔法のタイツ以外のすべての財宝とういのはどうでしょう。<br />
             悪い話ではありませんよね？</p>
         </div>
-        <button id="closeStory">OK</button>
       </div>
       <div id="howTo" style="display: none;">
+        <div class="closebox">
+          <button id="closeHowTo"><img src="assets/close.webp"></button>
+        </div>
         <div class="longText">
           <h2>遊び方</h2>
+          <h3>操作方法</h3>
+          <p>
+            上下左右にフリック、または上下左右カーソルキーで方向転換です。<br />
+            タップまたはスペースキーで前進です。
+          </p>
           <h3>クリア条件</h3>
           <p>
             迷宮内にある魔法のタイツを手に入れたうえでスタート地点まで戻ればクリアです。<br />
@@ -393,19 +430,15 @@
           </p>
           <h3>実戦迷宮</h3>
           <p>
-            実戦迷宮は日替わりです。ボタンを押した時点の日本時間の日付で迷宮の構造と中にあるアイテムが決まります。
+            実戦迷宮は日替わりです。ボタンを押した時点の日本時間の日付で迷宮の構造や中にあるアイテムが決まります。
             <br />
-            タイツの他にアイテムが二個あります。
+            魔法のタイツの他にアイテムが二個あります。
             <br />
-            その日の魔法のタイツが入手済みの状態でアイテムを持ってスタート地点に戻るとアイテムが自分のものになります。
+            その日の魔法のタイツが入手済みの状態の場合に限り、アイテムを持ってスタート地点に戻るとアイテムが自分のものになります。
             <br />
             集めたアイテムはメニュー画面の「手に入れたもの」ボタンで確認できます。
           </p>
-
-
-          </p>
         </div>
-        <button id="closeHowTo">OK</button>
       </div>
     </div>
     <div class="bottom" id="bottom">
