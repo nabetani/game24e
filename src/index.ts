@@ -792,7 +792,7 @@ window.onload = () => {
     setStyle("menu", "display", "block");
     setStyle("itemList", "display", "none");
   })
-  setEvent("closeHowTo", () => {
+  setEvent("howTo", () => {
     setStyle("menu", "display", "block");
     setStyle("howTo", "display", "none");
   })
@@ -800,7 +800,7 @@ window.onload = () => {
     setStyle("menu", "display", "none");
     setStyle("howTo", "display", "block");
   })
-  setEvent("closeStory", () => {
+  setEvent("story", () => {
     setStyle("menu", "display", "block");
     setStyle("story", "display", "none");
   })
