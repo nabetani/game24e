@@ -200,7 +200,7 @@ class Main {
     this.camera.updateProjectionMatrix()
     this.walk("", () => false);
     this.openingMessage()
-    this.tutorialMessageTimerID = window.setTimeout(() => this.showHowToTurnHorz(), 5000);
+    this.tutorialMessageTimerID = window.setTimeout(() => this.showHowToTurnHorz(), 10000);
   }
   openingMessage() {
     switch (this.src!.t) {
