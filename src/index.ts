@@ -808,9 +808,23 @@ window.onload = () => {
     setStyle("menu", "display", "none");
     setStyle("story", "display", "block");
   })
-  setEvent("itemListBtn", () => {
-    setStyle("menu", "display", "none");
-    setStyle("itemList", "display", "block");
+  const getItemCounts = (): WS.ItemCountsType => {
+    const e = (document.getElementById("radioToday") as HTMLInputElement)!;
+    if (e.checked) {
+      const i = WS.currentStocks.value;
+      if (dayNum() != i.day) {
+        return []
+      }
+      const r: WS.ItemCountsType = [];
+      for (const id of i.stocks) {
+        r[id] = (r[id] || 0) + 1;
+      }
+      return r;
+    } else {
+      return WS.itemCounts.value;
+    }
+  };
+  const updateItemListTable = () => {
     const ft = document.getElementById("firstTR")!
     for (; ;) {
       const nes = ft.nextElementSibling
@@ -819,7 +833,7 @@ window.onload = () => {
       }
       nes.remove();
     }
-    const counts = WS.itemCounts.value
+    const counts = getItemCounts();
     counts.forEach((count, id) => {
       if (count != null && 0 < count) {
         const ii = itemInfo(id)
@@ -830,5 +844,15 @@ window.onload = () => {
         ft.parentElement!.appendChild(tr)
       }
     })
+  };
+  for (const id of ["radioToday", "radioTotal"]) {
+    const he = document.getElementById(id);
+    const ie = (he as HTMLInputElement)!;
+    ie.onchange = () => updateItemListTable();
+  }
+  setEvent("itemListBtn", () => {
+    setStyle("menu", "display", "none");
+    setStyle("itemList", "display", "block");
+    updateItemListTable();
   });
 }

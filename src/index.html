@@ -36,6 +36,12 @@
       font-size: calc(var(--sizeUnit) * 2);
     }
 
+    h1 {
+      font-size: calc(var(--sizeUnit) * 3);
+      font-weight: bolder;
+
+    }
+
     canvas {
       display: none;
     }
@@ -208,7 +214,6 @@
     div#signs {
       display: flex;
       justify-content: right;
-      align-items: right;
       width: 100vw;
       padding-top: 3vh;
       padding-right: 3vh;
@@ -322,6 +327,43 @@
       font-family: "HiraginoSans-W0", "Hiragino Sans", "ヒラギノ角ゴシック", "游ゴシック体", "YuGothic", sans-serif;
       color: darkgreen;
     }
+
+    #radios {
+      padding: calc(var(--sizeUnit) * 1);
+    }
+
+    input[type="radio"] {
+      display: none;
+    }
+
+    input[type="radio"]+label:before {
+      content: "✓";
+      color: rgba(0, 0, 0, 0);
+    }
+
+    input[type="radio"]+label:after {
+      content: "　";
+    }
+
+    input[type="radio"]:checked+label:before {
+      color: black;
+    }
+
+    input[type="radio"]:checked+label {
+      border: solid #888 calc(var(--sizeUnit) * 0.6);
+    }
+
+
+    input[type="radio"]+label {
+      border-radius: 4%;
+      border-radius: var(--sizeUnit);
+      border: solid #888 calc(var(--sizeUnit) * 0.2);
+      min-width: calc(var(--sizeUnit) * 20);
+      padding: calc(var(--sizeUnit) * 0.6);
+      margin: calc(var(--sizeUnit) * 2);
+      font-size: calc(var(--sizeUnit) * 2.4);
+      background-color: rgba(255, 255, 255, 0.4);
+    }
   </style>
 </head>
 
@@ -368,6 +410,10 @@
       </div>
       <div id="itemList" style="display: none;">
         <h1>手に入れたもの</h1>
+        <div id="radios">
+          <input type="radio" name="tt" id="radioToday" checked><label for="radioToday">今日</label>
+          <input type="radio" name="tt" id="radioTotal"><label for="radioTotal">今まで</label>
+        </div>
         <div id="itemTableBox">
           <table id="itemTable">
             <colgroup>
