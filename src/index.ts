@@ -207,7 +207,8 @@ class Main {
       case "REAL":
         {
           const s = this.world.itemStates()
-          this.showMsg(`魔法のタイツ: ${s.g == "stock" ? "入手済み" : "未入手"}\n未回収アイテム: ${2 - s.stock} 個`)
+          const rest = s.stock == 2 ? "なし" : `${2 - s.stock} 個`
+          this.showMsg(`魔法のタイツ: ${s.g == "stock" ? "入手済み" : "未入手"}\n未回収アイテム: ${rest}`)
         }
         break
       case "T1":
