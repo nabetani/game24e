@@ -49,12 +49,38 @@ const drawF = (
   }
 }
 
+const labText = (l: number, a: number, b: number, o: number = 1): string => {
+  const fi = (t: number): number => {
+    const de = 6 / 29
+    return de < t ? t ** 3 : (t - 16 / 116) * 3 * de * de
+  };
+  const [xn, yn, zn] = [95, 100, 108]
+  const [xx, yy, zz] = [
+    xn * fi((l + 16) / 116 + a / 500),
+    yn * fi((l + 16) / 116),
+    zn * fi((l + 16) / 116 - b / 200),
+  ]
+  const ga = (c: number): number => {
+    const v = (c < 0.0031308) ? c * 12.92 : (1.055) * c ** (1 / 2.4) - 0.055;
+    const z = 4
+    return Math.max(0, Math.min(v, z)) * 255 / z
+  };
+  const sr = ga(2.365 * xx - 0.897 * yy - 0.468 * zz);
+  const sg = ga(-0.515 * xx + 1.426 * yy + 0.08876 * zz);
+  const sb = ga(0.0052037 * xx - 0.0144 * yy + 1.0092 * zz);
+  if (o == 1) {
+    return `rgb(${sr} ${sg} ${sb})`
+  } else {
+    return `rgb(${sr} ${sg} ${sb} / ${o})`
+  }
+}
+
 const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: number, fa: number) => {
   const col = (l: number, sa: number, ax_: number): string => {
     const t = (1.6 - ax_) * Math.PI * 2 / 3
     const a = sa * Math.sin(t)
     const b = sa * Math.cos(t)
-    return `lab(${l}% ${a} ${b})`
+    return labText(l, a, b)
   }
   const baseCol = ctx.createLinearGradient(0, 0, cw, cw);
   baseCol.addColorStop(0, col(40, 25, ax))
@@ -126,7 +152,7 @@ const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: numb
       const a = r * Math.sin(th)
       const b = r * Math.cos(th)
       const o = f * 0.04
-      return `lab(${40}% ${a} ${b} / ${o})`
+      return labText(40, a, b, o)
     }
 
     const n = 5 + f
