@@ -151,10 +151,11 @@ const drawWall = (ctx: CanvasRenderingContext2D, cw: number, ax: number, f: numb
 }
 
 
-const newCanvas = (cw: number): HTMLCanvasElement => {
+const newCanvas = (cw: number, id: string): HTMLCanvasElement => {
   const canvas = document.createElement("canvas")
   canvas.setAttribute("width", `${cw}`)
   canvas.setAttribute("height", `${cw}`)
+  canvas.setAttribute("id", id)
   document.getElementsByTagName("body")[0].appendChild(canvas)
   return canvas
 }
@@ -618,10 +619,14 @@ class Main {
   }
   newTexture(ax: number, v: number, fa: number): THREE.Texture {
     const cw = 512
-    const canvas = newCanvas(cw)
-    const ctx = canvas.getContext("2d")!
-    drawWall(ctx, cw, ax, v, fa)
-    return new THREE.CanvasTexture(canvas)
+    const id = `wall_${ax}_${v}_${fa}`
+    const o = (document.getElementById(id) as HTMLCanvasElement) || (() => {
+      const canvas = newCanvas(cw, id)
+      const ctx = canvas.getContext("2d")!
+      drawWall(ctx, cw, ax, v, fa)
+      return canvas
+    })();
+    return new THREE.CanvasTexture(o)
   }
   wallGT(x: number, y: number, z: number, ax: number, te: Map<string, THREE.Texture>): { ge: THREE.BufferGeometry[], ma: THREE.Material[] } {
     const th = 1 / 20
