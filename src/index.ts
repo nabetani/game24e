@@ -795,7 +795,16 @@ window.onload = () => {
   const setEvent = (id: string, proc: () => void) => {
     const o = document.getElementById(id)
     if (o != null) {
-      o.onclick = o.ontouchend = proc
+      o.onclick = proc
+      let started = false
+      let moved = false
+      o.ontouchstart = () => (started = true)
+      o.ontouchmove = () => (moved = started)
+      o.ontouchcancel = () => (moved = started = false)
+      o.ontouchend = () => {
+        if (started && !moved) { proc(); }
+        moved = started = false
+      }
     }
   };
   {
