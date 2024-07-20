@@ -454,7 +454,25 @@ class Main {
       if (null == this.world_) {
         return;
       }
-      if (event.code == "ArrowRight") {
+      // if (event.code == "KeyD") {
+      //   const x = this.world.pos.x;
+      //   const y = 1e5;
+      //   const z = 1e5;
+      //   this.camera.lookAt(new THREE.Vector3(x, y, z));
+      //   event.preventDefault();
+      // } else
+      if (event.code == "KeyF") {
+        const s = document.getElementById("stats")!;
+        if (s.style.display === "block") {
+          s.style.display = "none";
+        } else {
+          s.style.display = "block";
+          const e = (s.firstChild as HTMLElement)?.style
+          if (e != null) {
+            e.left = "50vw"
+          }
+        }
+      } else if (event.code == "ArrowRight") {
         turnY(-1);
         event.preventDefault();
       } else if (event.code === "ArrowLeft") {
