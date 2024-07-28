@@ -830,6 +830,13 @@ const onReize = () => {
 }
 window.onresize = () => onReize()
 
+const setSound = (on: boolean) => {
+  const offBtn = document.getElementById("soundOffBtn")!;
+  const onBtn = document.getElementById("soundOnBtn")!;
+  (on ? onBtn : offBtn).classList.add("checked");
+  (on ? offBtn : onBtn).classList.remove("checked");
+}
+
 const setStyle = (id: string, attr: string, value: string) => {
   const o = document.getElementById(id)!;
   o.style.setProperty(attr, value)
@@ -876,6 +883,12 @@ window.onload = () => {
     }
     setEvent("startGame", () => {
       startGame({ seed: seedNum(), day: dayNum(), t: "REAL" });
+    })
+    setEvent("soundOffBtn", () => {
+      setSound(false);
+    })
+    setEvent("soundOnBtn", () => {
+      setSound(true);
     })
     const startTutorial = (t: "T1" | "T2") => {
       const tseed = Math.floor(Math.random() * 2 ** 30)
