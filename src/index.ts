@@ -187,6 +187,29 @@ const newCanvas = (cw: number, id: string): HTMLCanvasElement => {
 }
 
 type actionValues = "" | "hturn" | "vturn" | "forward";
+type AudioType = THREE.Audio<GainNode>;
+type AudioOpts = {
+  volume?: number,
+  loop?: number,
+};
+
+const createAudio = (stream: string, opts: AudioOpts = {}): AudioType => {
+  const audioLoader = new THREE.AudioLoader();
+  const listener = new THREE.AudioListener();
+  const audio = new THREE.Audio(listener);
+  audioLoader.load(stream, (buffer) => {
+    audio.setBuffer(buffer);
+    if (opts.volume != null) {
+      audio.setVolume(opts.volume);
+    }
+    if (opts.loop != null) {
+      audio.setLoopEnd(opts.loop);
+      audio.setLoop(true);
+    }
+  });
+  return audio
+}
+
 
 class Main {
   scene = new THREE.Scene();
@@ -208,6 +231,8 @@ class Main {
   simpleMsgT = 0
   tutorialMessageTimerID: number = 0
   actions: Set<actionValues> = new Set<actionValues>();
+  bgm: AudioType = createAudio("./assets/bgm.m4a", { volume: 0.2, loop: 30 });
+  seWalk: AudioType = createAudio("./assets/walk.m4a", { volume: 0.8 });
 
   adaptToWindowSize() {
     const w = window.innerWidth
@@ -388,6 +413,8 @@ class Main {
     const cp0 = structuredClone(this.world.camPose)
     const animate = proc()
     if (animate) {
+      this.seWalk.stop();
+      this.seWalk.play();
       this.actions.add(a);
     }
     const cp1 = structuredClone(this.world.camPose)
@@ -835,6 +862,8 @@ window.onload = () => {
       setStyle("game", "display", "block");
       setStyle("domMsg", "display", "none");
       main.initWorld(src);
+      console.log("play bgm")
+      main.bgm.play();
     }
     setEvent("startGame", () => {
       startGame({ seed: seedNum(), day: dayNum(), t: "REAL" });
