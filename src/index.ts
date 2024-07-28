@@ -355,8 +355,8 @@ class Main {
     const appendBtn = (name: string, proc: () => void) => {
       const b = domItem("button", name)
       b.classList.add("ingame");
-      b.onclick = proc
-      b.ontouchend = proc
+      b.onclick = (ev) => { proc(); ev.preventDefault(); };
+      b.ontouchend = (ev) => { proc(); ev.preventDefault(); };
       this.domMsg.appendChild(b)
     }
     appendBtn("OK", () => this.domMsg.style.display = "none");
@@ -870,9 +870,10 @@ window.onload = () => {
       o.ontouchstart = () => (started = true)
       o.ontouchmove = () => (moved = started)
       o.ontouchcancel = () => (moved = started = false)
-      o.ontouchend = () => {
+      o.ontouchend = (ev) => {
         if (started && !moved) { proc(); }
-        moved = started = false
+        moved = started = false;
+        ev.preventDefault();
       }
     }
   };
