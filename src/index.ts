@@ -850,7 +850,7 @@ const setStyle = (id: string, attr: string, value: string) => {
 
 const dayNum = (): number => {
   const t = new Date().getTime();
-  const t0 = new Date('2024-07-13T00:00:00+09:00').getTime();
+  const t0 = new Date('2024-07-28T00:00:00+09:00').getTime();
   // const t0 = new Date('2024-06-01T20:48:00+09:00').getTime();
   return Math.floor((t - t0) / (24 * 60 * 60 * 1000));
 }
