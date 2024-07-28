@@ -835,6 +835,7 @@ const setSound = (on: boolean) => {
   const onBtn = document.getElementById("soundOnBtn")!;
   (on ? onBtn : offBtn).classList.add("checked");
   (on ? offBtn : onBtn).classList.remove("checked");
+  WS.soundOn.write(on);
 }
 
 const setStyle = (id: string, attr: string, value: string) => {
@@ -853,6 +854,8 @@ const seedNum = (): number => (dayNum() * 1367) ^ 2731
 
 window.onload = () => {
   onReize()
+  setSound(WS.soundOn.value);
+
   const setEvent = (id: string, proc: () => void) => {
     const o = document.getElementById(id)
     if (o != null) {
