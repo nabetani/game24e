@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" href="assets/icon.ico" />
+  <title>game24e</title>
+  <style>
+    :root {
+      --sizeUnit: 1vh;
+    }
+
+    html,
+    body {
+      width: 100%;
+      background-color: black;
+    }
+
+    * {
+      box-sizing: border-box;
+      overflow: hidden;
+      border: none;
+      margin: 0;
+      padding: 0;
+      font-family:
+        "Hiragino Kaku Gothic ProN",
+        "Hiragino Sans",
+        Meiryo,
+        "Noto Sans JP",
+        sans-serif;
+    }
+
+    li {
+      text-align: left;
+      font-size: calc(var(--sizeUnit) * 2);
+    }
+
+    h1 {
+      font-size: calc(var(--sizeUnit) * 3);
+      font-weight: bolder;
+
+    }
+
+    canvas {
+      display: none;
+    }
+
+    div#game {
+      display: none;
+    }
+
+    div#title {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+    }
+
+    img.fill {
+      object-fit: contain;
+      max-width: 100svw;
+      max-height: 100svh;
+    }
+
+    div#start {
+      position: absolute;
+      top: calc(var(--sizeUnit) * 10);
+      width: 100svw;
+      max-width: 100svw;
+      text-align: center;
+      display: none;
+    }
+
+    dl {
+      padding-top: calc(var(--sizeUnit) * 0.7);
+    }
+
+    button {
+      background-color: rgba(255, 255, 255, 0.4);
+      border-radius: var(--sizeUnit);
+      /* 上右下左 */
+      margin: calc(var(--sizeUnit) * 1) calc(var(--sizeUnit) * 0.6) calc(var(--sizeUnit) * 1) calc(var(--sizeUnit) * 0.6);
+      padding: calc(var(--sizeUnit) * 0.3) calc(var(--sizeUnit) * 2) calc(var(--sizeUnit) * 0.3) calc(var(--sizeUnit) * 2);
+      border: solid #888 calc(var(--sizeUnit) * 0.2);
+      font-size: calc(var(--sizeUnit) * 2.4);
+    }
+
+    .closebox button {
+      background-color: rgba(0, 0, 0, 0);
+      border-radius: 0;
+      height: calc(var(--sizeUnit) * 3);
+      width: calc(var(--sizeUnit) * 3);
+      margin: 0;
+      padding: calc(var(--sizeUnit) * 0.2);
+      border: none;
+      font-size: calc(var(--sizeUnit) * 2);
+    }
+
+    .closebox button img {
+      height: calc(var(--sizeUnit) * 2.6);
+      width: calc(var(--sizeUnit) * 2.6);
+    }
+
+    button.ingame {
+      padding: calc(var(--sizeUnit) * 0.3);
+      font-size: calc(var(--sizeUnit) * 2);
+    }
+
+    button.large {
+      font-size: calc(var(--sizeUnit) * 5);
+      padding-left: calc(var(--sizeUnit) * 2);
+      padding-right: calc(var(--sizeUnit) * 2);
+    }
+
+    div#soundUI {
+      padding-right: calc(var(--sizeUnit) * 1);
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+
+    div#soundUI>div {
+      margin-left: auto;
+      margin-right: auto;
+      text-align: right;
+      width: calc(var(--sizeUnit) * 512/9);
+      min-width: calc(var(--sizeUnit) * 512/9);
+      max-width: calc(var(--sizeUnit) * 512/9);
+    }
+
+    div#soundUI>div>button {
+      border-radius: 0;
+      border: solid black calc(var(--sizeUnit) * 0.1);
+      font-size: calc(var(--sizeUnit) * 1.5);
+      padding-left: calc(var(--sizeUnit) * 2);
+      padding-right: calc(var(--sizeUnit) * 2);
+      background-color: rgba(255, 255, 255, 0.8);
+      /* 上右下左 */
+      margin: calc(var(--sizeUnit) * 0.5) calc(var(--sizeUnit) * 0.3) calc(var(--sizeUnit) * 0.5) calc(var(--sizeUnit) * 0.3);
+      padding: calc(var(--sizeUnit) * 0.1) calc(var(--sizeUnit) * 1) calc(var(--sizeUnit) * 0.1) calc(var(--sizeUnit) * 1);
+    }
+
+    div#soundUI>div>button.checked {
+      border: solid black calc(var(--sizeUnit) * 0.4);
+      font-size: calc(var(--sizeUnit) * 1.8);
+      font-weight: bolder;
+    }
+
+    div.bottom {
+      position: absolute;
+      text-align: center;
+      display: none;
+      padding-bottom: calc(var(--sizeUnit) *1);
+    }
+
+    div.bottom>button {
+      margin: calc(var(--sizeUnit) * 0.5);
+      padding: calc(var(--sizeUnit) * 0.5);
+      border-radius: calc(var(--sizeUnit) * 0.3);
+      font-size: calc(var(--sizeUnit) * 2);
+    }
+
+    div.msg-outer {
+      position: fixed;
+      top: calc(20*var(--sizeUnit));
+      box-sizing: border-box;
+      width: 100vw;
+      padding: 0;
+      z-index: 10000000;
+      display: flex;
+      justify-content: center;
+      margin-top: calc(var(--sizeUnit));
+    }
+
+    div.msg {
+      max-width: calc(var(--sizeUnit)*45);
+      text-align: center;
+      align-self: center;
+      box-sizing: border-box;
+      padding: calc(var(--sizeUnit));
+      margin: calc(var(--sizeUnit));
+      border: dotted blue 3px;
+      border-radius: calc(var(--sizeUnit));
+      font-size: calc(var(--sizeUnit) * 2);
+      background-color: white;
+      display: none;
+    }
+
+    img.sign {
+      width: 3.5vh;
+      border: dotted #ddd 0.4vh;
+      border-radius: 0.6vh;
+      margin: 0.2vh;
+      padding: 0.3vh;
+      background-color: #222;
+    }
+
+    div#posBox {
+      position: fixed;
+      margin-top: 3vh;
+      margin-left: 3vh;
+      padding: 0;
+      z-index: 10000000;
+    }
+
+    div.pos {
+      display: inline-block;
+      margin-right: 1vh;
+      text-align: center;
+      border: solid #888 0.1px;
+      border-radius: calc(var(--sizeUnit) * 0.5);
+      background-color: #ccc;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: calc(var(--sizeUnit) * 3);
+      font-weight: bolder;
+    }
+
+    div.pos span {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: calc(var(--sizeUnit) * 3);
+      padding-left: calc(var(--sizeUnit) * 1);
+      padding-right: calc(var(--sizeUnit) * 1);
+    }
+
+    div.pos span:nth-child(3n+1) {
+      background-color: lawngreen;
+    }
+
+    div.pos span:nth-child(3n+2) {
+      background-color: aqua;
+    }
+
+    div.pos span:nth-child(3n+3) {
+      background-color: coral;
+    }
+
+    div#signs-outer {
+      position: fixed;
+      /* border: solid red 3px; */
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    div#signs {
+      display: flex;
+      justify-content: right;
+      width: 100vw;
+      padding-top: 3vh;
+      padding-right: 3vh;
+      /* border: dashed green 3px; */
+    }
+
+    ul {
+      list-style-position: outside;
+      list-style-type: none;
+    }
+
+    li {
+      /* overflow: visible; */
+      display: list-item;
+      /* margin-left: calc(var(--sizeUnit)*2); */
+      margin-top: calc(var(--sizeUnit)*1);
+      /* border: solid red 1px; */
+    }
+
+    dl {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+      padding-left: 5%;
+    }
+
+    dt {
+      width: calc(25% - var(--sizeUnit)*0.5);
+      text-align: center;
+      vertical-align: middle;
+      background-color: #DADADA;
+      margin: calc(var(--sizeUnit)*0.2);
+      padding: calc(var(--sizeUnit)*0.2);
+    }
+
+    dd {
+      width: calc(75% - var(--sizeUnit)*0.5);
+      background-color: #F3F3F3;
+      margin: calc(var(--sizeUnit)*0.2);
+      padding: calc(var(--sizeUnit)*0.2);
+      text-align: left;
+    }
+
+    td,
+    th {
+      background-color: white;
+    }
+
+    div.closebox {
+      width: calc(var(--sizeUnit)*55);
+      margin-left: auto;
+      margin-right: auto;
+      text-align: right;
+    }
+
+    div.longText {
+      text-align: left;
+      margin-left: auto;
+      margin-right: auto;
+      width: calc(var(--sizeUnit)*55);
+      padding: calc(var(--sizeUnit)*1);
+      max-height: calc(var(--sizeUnit)*60);
+      height: calc(var(--sizeUnit)*60);
+      background-color: rgba(255, 255, 255, 0.6);
+      overflow: scroll;
+    }
+
+    div#itemTableBox {
+      margin-left: auto;
+      margin-right: auto;
+      width: calc(var(--sizeUnit)*50);
+      max-height: calc(var(--sizeUnit)*45);
+      height: calc(var(--sizeUnit)*45);
+      overflow: scroll;
+    }
+
+    table#itemTable {
+      margin-left: auto;
+      margin-right: auto;
+      width: calc(var(--sizeUnit)*50);
+    }
+
+    .c0 {
+      width: calc(var(--sizeUnit)*30);
+    }
+
+    td:first-child {
+      text-align: left;
+      padding: calc(var(--sizeUnit)*0.5);
+    }
+
+    a {
+      white-space: nowrap;
+      background-color: rgba(0, 0, 0, 0.5);
+      border: solid 0.3px rgba(0, 0, 0, 0.5);
+      border-radius: calc(var(--sizeUnit)*0.5);
+      font-size: calc(var(--sizeUnit)*1.5);
+      text-decoration: none;
+      color: white;
+      padding: calc(var(--sizeUnit)*0.5);
+    }
+
+    p.a {
+      padding-top: 0.7em;
+      font-family: "ヒラギノ明朝 ProN", "Hiragino Mincho ProN", "游明朝体", "YuMincho", serif;
+      font-weight: bold;
+      color: darkred;
+    }
+
+    p.b {
+      padding-top: 0.7em;
+      font-family: "HiraginoSans", "Hiragino Sans", "ヒラギノ角ゴシック", "游ゴシック体", "YuGothic", sans-serif;
+      color: darkblue;
+    }
+
+    #radios {
+      padding: calc(var(--sizeUnit) * 1);
+    }
+
+    input[type="radio"] {
+      display: none;
+    }
+
+    input[type="radio"]+label:before {
+      content: "✓";
+      color: rgba(0, 0, 0, 0);
+    }
+
+    input[type="radio"]+label:after {
+      content: "　";
+    }
+
+    input[type="radio"]:checked+label:before {
+      color: black;
+    }
+
+    input[type="radio"]:checked+label {
+      border: solid #888 calc(var(--sizeUnit) * 0.6);
+    }
+
+
+    input[type="radio"]+label {
+      border-radius: 4%;
+      border-radius: var(--sizeUnit);
+      border: solid #888 calc(var(--sizeUnit) * 0.2);
+      min-width: calc(var(--sizeUnit) * 20);
+      padding: calc(var(--sizeUnit) * 0.6);
+      margin: calc(var(--sizeUnit) * 2);
+      font-size: calc(var(--sizeUnit) * 2.4);
+      background-color: rgba(255, 255, 255, 0.4);
+    }
+
+    div#stats {
+      display: none;
+    }
+  </style>
+</head>
+
+<body id="body">
+  <div id="game">
+    <div id="stats"></div>
+    <div id="posBox">
+      <div id="YourPos" class="pos">
+        <div>You</div>
+        <span>1</span><span>2</span><span>3</span>
+      </div>
+      <div id="TPos" class="pos">
+        <div>Tights</div>
+        <span>1</span><span>2</span><span>3</span>
+      </div>
+    </div>
+    <div id="signs-outer">
+      <div id="signs">
+        <img class="sign" id="tsign" src="assets/tsign.webp" />
+        <img class="sign" id="isign0" src="assets/isign.webp" />
+        <img class="sign" id="isign1" src="assets/isign.webp" />
+      </div>
+    </div>
+    <div class="msg-outer">
+      <div class="msg" id="msg">msg</div>
+    </div>
+    <div class="msg-outer">
+      <div class="msg" id="domMsg">msg</div>
+    </div>
+  </div>
+  <div id="title">
+    <img class="fill" id="title-img" src="assets/title.webp" />
+    <div class="start" id="start">
+      <div id="menu">
+        <div id="soundUI">
+          <div>
+            <button id="soundOnBtn">Sound ON</button>
+            <button id="soundOffBtn" class="checked">Sound OFF</button>
+          </div>
+        </div>
+        <br />
+        <button id="storyBtn">物語</button>
+        <button id="howToBtn">遊び方</button>
+        <br />
+        <button id="tutorial1">練習迷宮<small> (小)</small></button>
+        <button id="tutorial2">練習迷宮<small> (中)</small></button>
+        <br />
+        <button id="startGame" class="large">実戦迷宮</button>
+        <br />
+        <button id="itemListBtn">手に入れたもの</button>
+      </div>
+      <div id="itemList" style="display: none;">
+        <h1>手に入れたもの</h1>
+        <div id="radios">
+          <input type="radio" name="tt" id="radioToday" checked><label for="radioToday">今日</label>
+          <input type="radio" name="tt" id="radioTotal"><label for="radioTotal">今まで</label>
+        </div>
+        <div id="itemTableBox">
+          <table id="itemTable">
+            <colgroup>
+              <col class="c0" />
+              <col class="c1" />
+              <col class="c2" />
+            </colgroup>
+            <tr id="firstTR">
+              <th scope="col">説明</th>
+              <th scope="col">希少性</th>
+              <th scope="col">個数</th>
+            </tr>
+          </table>
+        </div>
+        <button id="closeItemList">OK</button>
+      </div>
+      <div id="story" style="display: none;">
+        <div class="closebox">
+          <button id="closeStory"><img src="assets/close.webp"></button>
+        </div>
+        <div class="longText">
+          <h2>物語</h2>
+          <p class="b">あなたですか、立体的な迷宮が得意な冒険者というのは。</p>
+          <p class="a">え、あ、はい。立体迷宮を専門としています。戦闘は苦手なんで探索専門です。</p>
+          <p class="b">おお、あなたのような方を探しておりました。頼みというのは他でもありません。魔法のタイツです。</p>
+          <p class="a">それって、一度入ると魔法のタイツを手に入れるまで決して出られない恐ろしい迷宮ですね。流石にそれは...</p>
+          <p class="b">わかっておりますとも。<br />
+            ついに開発に成功したんです。魔法のタイツの場所を特定する魔法を。</p>
+          <p class="a">な、なんと</p>
+          <p class="b">そこで。あなたには魔法のタイツの在処を教えましょう。あなたは迷宮に入り、その場所に行って魔法のタイツを取ってきてくれればよいのです。</p>
+          <p class="a">なるほど……でも、魔物がいるはずですよね……</p>
+          <p class="b">私の魔法で殲滅しました。戦闘は不要です。<br />あとはわかっている場所に行くだけなんですが、あの迷宮はあなたのような方でないとなかなか厳しくて。</p>
+          <p class="a">魔物はおらず、場所もわかっていると。<br />であれば、報酬によってはお受けしましょう。</p>
+          <p class="b">報酬ですか。<br />その迷宮であなたが手に入れた、魔法のタイツ以外のすべての財宝とういのはどうでしょう。<br />
+            悪い話ではありませんよね？</p>
+        </div>
+      </div>
+      <div id="howTo" style="display: none;">
+        <div class="closebox">
+          <button id="closeHowTo"><img src="assets/close.webp"></button>
+        </div>
+        <div class="longText">
+          <h2>遊び方</h2>
+          <h3>操作方法</h3>
+          <p>
+            上下左右にフリック、または上下左右カーソルキーで方向転換です。<br />
+            タップまたはスペースキーで前進です。
+          </p>
+          <h3>クリア条件</h3>
+          <p>
+            迷宮内にある魔法のタイツを手に入れたうえでスタート地点まで戻ればクリアです。<br />
+          </p>
+          <h3>練習迷宮</h3>
+          <p>
+            練習迷宮は、規模が小さく、タイツ以外のアイテムはありません。
+            <br />
+            ボタンを押すたびに毎回異なる迷宮になります。
+          </p>
+          <h3>実戦迷宮</h3>
+          <p>
+            実戦迷宮は日替わりです。ボタンを押した時点の日本時間の日付で迷宮の構造や中にあるアイテムが決まります。
+            <br />
+            魔法のタイツの他にアイテムが二個あります。
+            <br />
+            その日の魔法のタイツが入手済みの状態の場合に限り、アイテムを持ってスタート地点に戻るとアイテムが自分のものになります。
+            <br />
+            集めたアイテムはメニュー画面の「手に入れたもの」ボタンで確認できます。
+          </p>
+          <h3>注意事項</h3>
+          <ul>
+            <li>3Dゲームなので酔うかもしれません。苦手な方はご注意ください。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="bottom" id="bottom">
+      <a href="https://nabetani.hatenadiary.com/entry/game24e">制作ノート</a>
+      <a href="https://taittsuu.com/users/nabetani">鍋谷武典@タイッツー</a>
+      <a href="https://github.com/nabetani/game24e">Souce code and Licence</a>
+      <a href="https://suzuri.jp/Nabetani-T/designs/16273654">SUZURI - Nabetani-T - 魔法のタイツの迷宮</a>
+      <a href="https://taittsuu.com/search/taiitsus/hashtags?query=魔法のタイツの迷宮">タイッツー #魔法のタイツの迷宮</a>
+    </div>
+  </div>
+</body>
+
+</html>
