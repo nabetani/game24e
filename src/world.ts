@@ -482,7 +482,7 @@ export class World {
     if (wallExists) { return { animate: false, get: false, goal: false } }
     this.incWalkCount()
     this.pos = dest
-    const item = this.items.find((i) => isSameXyz(i.p, this.pos))
+    const item = this.items.find((i) => isSameXyz(i.p, this.pos) && !this.itemsInBag.has(i.id))
     let goal = false;
     if (item != null) { this.onItem(item) }
     if (isSameXyz(this.pos, { x: 0, y: 0, z: 0 })) {
