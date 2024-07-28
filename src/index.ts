@@ -232,7 +232,7 @@ class Main {
   simpleMsgT = 0
   tutorialMessageTimerID: number = 0
   actions: Set<actionValues> = new Set<actionValues>();
-  bgm: AudioType = createAudio("./assets/bgm.m4a", { volume: 0.2, loop: 30 });
+  bgm: AudioType = createAudio("./assets/bgm.m4a", { volume: 0.3, loop: 30 });
   seWalk: AudioType = createAudio("./assets/walk.m4a", { volume: 0.8 });
   seGet: AudioType = createAudio("./assets/get.m4a", { volume: 0.6 });
   seGoal: AudioType = createAudio("./assets/goal.m4a", {});
@@ -422,7 +422,6 @@ class Main {
     }
     const cp0 = structuredClone(this.world.camPose)
     const walkResult = proc()
-    console.log(walkResult);
     if (walkResult.animate) {
       this.seWalk.stop();
       if (walkResult.get) {
@@ -436,7 +435,6 @@ class Main {
     }
     const cp1 = structuredClone(this.world.camPose)
     this.writePos("YourPos", this.world.pos)
-    console.log({ walkCount: this.world.walkCount })
     let now: null | number = null
     const t = walkResult.animate ? 0.3 : 1 / 1000
     this.queue.push(() => {
@@ -628,7 +626,6 @@ class Main {
         this.world.addToBag(item.id)
         const name = item.id == World.goalID ? "魔法のタイツ" : itemInfo(item.id).uname
         this.showMsg(`${name} を手に入れた。`)
-        console.log({ getItem: item.id })
         got = this.clock.getElapsedTime()
         this.items.delete(item.id)
         this.updateItemState()
