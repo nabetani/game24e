@@ -233,6 +233,8 @@ class Main {
   actions: Set<actionValues> = new Set<actionValues>();
   bgm: AudioType = createAudio("./assets/bgm.m4a", { volume: 0.2, loop: 30 });
   seWalk: AudioType = createAudio("./assets/walk.m4a", { volume: 0.8 });
+  seGet: AudioType = createAudio("./assets/get.m4a", { volume: 0.6 });
+  seGoal: AudioType = createAudio("./assets/goal.m4a", {});
 
   adaptToWindowSize() {
     const w = window.innerWidth
@@ -250,7 +252,7 @@ class Main {
     this.world.onGoal = (gi: W.GoalInfo) => this.onGoal(gi)
     this.updateItemState();
     this.camera.updateProjectionMatrix()
-    this.walk("", () => false);
+    this.walk("", () => { return { animate: false, goal: false, get: false } });
     this.openingMessage()
     this.tutorialMessageTimerID = window.setTimeout(() => this.showHowToTurnHorz(), 10000);
   }
@@ -406,22 +408,29 @@ class Main {
       }
     }
   }
-  walk(a: actionValues, proc: () => boolean) {
+  walk(a: actionValues, proc: () => W.walkResult) {
     if (1 < this.queue.length) {
       return
     }
     const cp0 = structuredClone(this.world.camPose)
-    const animate = proc()
-    if (animate) {
+    const walkResult = proc()
+    console.log(walkResult);
+    if (walkResult.animate) {
       this.seWalk.stop();
-      this.seWalk.play();
+      if (walkResult.get) {
+        this.seGet.play();
+      } else if (walkResult.goal) {
+        this.seGoal.play();
+      } else {
+        this.seWalk.play();
+      }
       this.actions.add(a);
     }
     const cp1 = structuredClone(this.world.camPose)
     this.writePos("YourPos", this.world.pos)
     console.log({ walkCount: this.world.walkCount })
     let now: null | number = null
-    const t = animate ? 0.3 : 1 / 1000
+    const t = walkResult.animate ? 0.3 : 1 / 1000
     this.queue.push(() => {
       if (now == null) {
         now = this.clock.getElapsedTime()

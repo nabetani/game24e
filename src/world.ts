@@ -11,6 +11,8 @@ export const emptyX: wall = 0x10
 export const emptyY: wall = 0x20
 export const emptyZ: wall = 0x40
 
+export type walkResult = { animate: boolean, get: boolean, goal: boolean };
+
 export type xyz = { x: number, y: number, z: number }
 
 export type itemLocType = { id: number, p: xyz }
@@ -432,7 +434,7 @@ export class World {
     }
   }
 
-  turnY(d: number): boolean {
+  turnY(d: number): walkResult {
     // console.log(JSON.stringify({ d: d, f: this.iFore, t: this.iTop }))
     const t = [
       [2, 5, 3, 4],
@@ -442,13 +444,13 @@ export class World {
     const e = (d < 0) == ((this.iTop & 1) == 0)
     this.iFore = t[(t.indexOf(this.iFore) + (e ? 1 : 3)) % 4]
     // console.log(JSON.stringify({ d: d, f: this.iFore, t: this.iTop }))
-    return true
+    return { animate: true, goal: false, get: false }
   }
   // up/down
-  turnZ(d: number): boolean {
+  turnZ(d: number): walkResult {
     [this.iFore, this.iTop] =
       (d < 0) ? [invDir(this.iTop), this.iFore] : [this.iTop, invDir(this.iFore)]
-    return true
+    return { animate: true, goal: false, get: false }
   }
   hasTights(): boolean {
     return this.itemsInBag.has(World.goalID) || this.itemsInStock.has(World.goalID)
@@ -462,7 +464,7 @@ export class World {
     }
     return null
   }
-  move(): boolean {
+  move(): walkResult {
     const d = dirToXyz(this.iFore)
     const dest = addXyz(this.pos, d)
     const w0 = this.cellAt(this.pos)
@@ -477,13 +479,15 @@ export class World {
         return false
       }
     })()
-    if (wallExists) { return false }
+    if (wallExists) { return { animate: false, get: false, goal: false } }
     this.incWalkCount()
     this.pos = dest
-    const i = this.items.find((i) => isSameXyz(i.p, this.pos))
-    if (i != null) { this.onItem(i) }
+    const item = this.items.find((i) => isSameXyz(i.p, this.pos))
+    let goal = false;
+    if (item != null) { this.onItem(item) }
     if (isSameXyz(this.pos, { x: 0, y: 0, z: 0 })) {
       if (this.hasTights()) {
+        goal = true
         const cs = currentStocks(this.src.day)
         const gi: GoalInfo = { newItems: [...this.itemsInBag.keys()] }
         const itemCounts = WS.itemCounts.value
@@ -500,7 +504,7 @@ export class World {
         this.onGoal({ newItems: [] })
       }
     }
-    return true
+    return { animate: true, get: item != null, goal: goal }
   }
   incWalkCount() {
     ++this.walkCount;
