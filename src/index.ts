@@ -226,6 +226,7 @@ class Main {
   clock = new THREE.Clock(true)
   items: Map<number, () => void> = new Map<number, () => void>()
   src: W.WSrc | null = null
+  soundOn: boolean = false
   simpleMsg = document.getElementById("msg")!
   domMsg = document.getElementById("domMsg")!
   simpleMsgT = 0
@@ -244,8 +245,12 @@ class Main {
     this.renderer.setSize(w, h)
     this.renderer.setPixelRatio(2);
   }
+  playSound(a: AudioType) {
+    if (this.soundOn) { a.play() }
+  }
   initWorld(src: W.WSrc) {
     this.src = src
+    this.soundOn = WS.soundOn.value;
     this.world_ = new World(this.src!);
     this.initMap();
     this.world.onItem = (i: W.itemLocType) => { this.onItem(i) }
@@ -255,6 +260,8 @@ class Main {
     this.walk("", () => { return { animate: false, goal: false, get: false } });
     this.openingMessage()
     this.tutorialMessageTimerID = window.setTimeout(() => this.showHowToTurnHorz(), 10000);
+    this.playSound(this.bgm);
+
   }
   openingMessage() {
     switch (this.src!.t) {
@@ -321,6 +328,7 @@ class Main {
     }
   }
   goToTitle() {
+    this.bgm.stop();
     setStyle("title", "display", "flex");
     setStyle("game", "display", "none");
     this.scene = new THREE.Scene();
@@ -418,11 +426,11 @@ class Main {
     if (walkResult.animate) {
       this.seWalk.stop();
       if (walkResult.get) {
-        this.seGet.play();
+        this.playSound(this.seGet);
       } else if (walkResult.goal) {
-        this.seGoal.play();
+        this.playSound(this.seGoal);
       } else {
-        this.seWalk.play();
+        this.playSound(this.seWalk);
       }
       this.actions.add(a);
     }
@@ -881,8 +889,6 @@ window.onload = () => {
       setStyle("game", "display", "block");
       setStyle("domMsg", "display", "none");
       main.initWorld(src);
-      console.log("play bgm")
-      main.bgm.play();
     }
     setEvent("startGame", () => {
       startGame({ seed: seedNum(), day: dayNum(), t: "REAL" });
