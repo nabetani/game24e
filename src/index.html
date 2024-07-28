@@ -115,13 +115,21 @@
     }
 
     div#soundUI {
-      text-align: right;
       padding-right: calc(var(--sizeUnit) * 1);
       padding-bottom: 0;
       margin-bottom: 0;
     }
 
-    div#soundUI>button {
+    div#soundUI>div {
+      margin-left: auto;
+      margin-right: auto;
+      text-align: right;
+      width: calc(var(--sizeUnit) * 512/9);
+      min-width: calc(var(--sizeUnit) * 512/9);
+      max-width: calc(var(--sizeUnit) * 512/9);
+    }
+
+    div#soundUI>div>button {
       border-radius: 0;
       border: solid black calc(var(--sizeUnit) * 0.1);
       font-size: calc(var(--sizeUnit) * 1.5);
@@ -133,7 +141,7 @@
       padding: calc(var(--sizeUnit) * 0.1) calc(var(--sizeUnit) * 1) calc(var(--sizeUnit) * 0.1) calc(var(--sizeUnit) * 1);
     }
 
-    div#soundUI>button.checked {
+    div#soundUI>div>button.checked {
       border: solid black calc(var(--sizeUnit) * 0.4);
       font-size: calc(var(--sizeUnit) * 1.8);
       font-weight: bolder;
@@ -429,8 +437,10 @@
     <div class="start" id="start">
       <div id="menu">
         <div id="soundUI">
-          <button id="soundOnBtn">Sound ON</button>
-          <button id="soundOffBtn" class="checked">Sound OFF</button>
+          <div>
+            <button id="soundOnBtn">Sound ON</button>
+            <button id="soundOffBtn" class="checked">Sound OFF</button>
+          </div>
         </div>
         <br />
         <button id="storyBtn">物語</button>
