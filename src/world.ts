@@ -336,7 +336,7 @@ class Builder {
     return r
   }
 }
-const currentStocks = (day: number): WS.CurrentStocks => {
+const currentStocks = (day: number, write: boolean): WS.CurrentStocks => {
   {
     const r = WS.currentStocks.value
     if (r.day === day) {
@@ -344,7 +344,9 @@ const currentStocks = (day: number): WS.CurrentStocks => {
     }
   }
   const r: WS.CurrentStocks = { day: day, stocks: [] }
-  WS.currentStocks.write(r)
+  if (write) {
+    WS.currentStocks.write(r)
+  }
   return r
 }
 
@@ -395,7 +397,7 @@ export class World {
   constructor(seed: WSrc) {
     this.src = seed
     this.walkCount = World.initialWalkCount(this.src)
-    const cs = currentStocks(this.src.day)
+    const cs = currentStocks(this.src.day, this.src.t == "REAL")
     for (const id of cs.stocks) {
       this.itemsInStock.add(id)
     }
@@ -488,7 +490,7 @@ export class World {
     if (isSameXyz(this.pos, { x: 0, y: 0, z: 0 })) {
       if (this.hasTights()) {
         goal = true
-        const cs = currentStocks(this.src.day)
+        const cs = currentStocks(this.src.day, this.src.t == "REAL")
         const gi: GoalInfo = { newItems: [...this.itemsInBag.keys()] }
         const itemCounts = WS.itemCounts.value
         for (const id of this.itemsInBag.keys()) {
@@ -496,8 +498,10 @@ export class World {
           cs.stocks.push(id)
           itemCounts[id] = (itemCounts[id] || 0) + 1
         }
-        WS.itemCounts.write(itemCounts)
-        WS.currentStocks.write(cs)
+        if (this.src.t == "REAL") {
+          WS.itemCounts.write(itemCounts)
+          WS.currentStocks.write(cs)
+        }
         this.itemsInBag.clear()
         this.onGoal(gi)
       } else {
